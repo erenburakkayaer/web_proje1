@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yönetim Paneli - 66 Vizite</title>
+  <meta name="description"
+    content="66 Vizite Araç ve QR Kod Yönetim Paneli. Araçlarınızı ve anonim QR vizite kodlarınızı yönetin.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="dashboard-wrapper">
+
+    <!-- ==================== YAN MENÜ (SIDEBAR) ==================== -->
+    <aside class="dash-sidebar" id="dashSidebar">
+      <!-- Sidebar Üst Başlık & Logo -->
+      <div class="dash-sidebar-header">
+        <a href="index.html" class="brand-logo" title="Ana Sayfaya Git">
+          <svg class="brand-icon" viewBox="0 0 36 36" fill="none">
+            <path d="M7 26C11 18 25 18 29 26" stroke="#F5A623" stroke-width="4" stroke-linecap="round" />
+            <path d="M12 18C15 13 21 13 24 18" stroke="#F5A623" stroke-width="3" stroke-linecap="round" />
+            <circle cx="9" cy="27" r="3" fill="#F5A623" />
+            <circle cx="27" cy="27" r="3" fill="#F5A623" />
+          </svg>
+          <span class="brand-name">66 Vizite</span>
+        </a>
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Menüyü Kapat">&times;</button>
+      </div>
+
+      <!-- Menü Linkleri -->
+      <nav class="dash-nav">
+        <span class="dash-nav-section-title">Yönetim</span>
+        
+        <a href="#overviewSection" class="dash-nav-link active" id="navLinkOverview">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+            <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+            <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+          </svg>
+          <span>Genel Bakış</span>
+        </a>
+
+        <a href="#vehiclesSection" class="dash-nav-link" id="navLinkVehicles">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M5 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+            <path d="M15 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+            <path d="M5 17H3v-4l2-5h10l2 5v4h-2"></path>
+            <path d="M9 17h6"></path>
+          </svg>
+          <span>Araçlarım & QR</span>
+          <span class="nav-counter-badge" id="navVehiclesCount">2</span>
+        </a>
+
+        <a href="#analyticsSection" class="dash-nav-link" id="navLinkAnalytics">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M3 3v18h18"></path>
+            <path d="m19 9-5 5-4-4-3 3"></path>
+          </svg>
+          <span>Tarama Analitiği</span>
+        </a>
+
+        <span class="dash-nav-section-title">Hesap & Güvenlik</span>
+
+        <a href="#settingsSection" class="dash-nav-link" id="navLinkSettings">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Gizlilik & Ayarlar</span>
+        </a>
+
+        <a href="index.html" class="dash-nav-link" title="Ana Sayfaya Geri Dön">
+          <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Ana Sayfaya Dön</span>
+        </a>
+      </nav>
+
+      <!-- Aktif Paket Kartı -->
+      <div class="sidebar-plan-card">
+        <div class="plan-card-header">
+          <span class="plan-card-title">Paketiniz</span>
+          <span class="plan-badge-pill">PRO PLAN</span>
+        </div>
+        <div class="plan-progress-bar">
+          <div class="plan-progress-fill"></div>
+        </div>
+        <div class="plan-usage-text">
+          <span>Kullanılan: 2 / 5 Araç</span>
+          <span>%40 Kota</span>
+        </div>
+      </div>
+
+      <!-- Kullanıcı Profil Özeti -->
+      <div class="sidebar-user-footer">
+        <div class="user-avatar-circle" id="userAvatarText">AD</div>
+        <div class="user-meta-info">
+          <span class="user-display-name" id="userDisplayName">Ali Demir</span>
+          <span class="user-display-role">Pro Üye • Doğrulanmış</span>
+        </div>
+        <button class="logout-icon-btn" id="logoutBtn" title="Çıkış Yap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ==================== ANA İÇERİK ALANI (MAIN CONTENT) ==================== -->
+    <main class="dash-main">
+
+      <!-- Üst Bar (Topbar) -->
+      <header class="dash-topbar">
+        <div class="topbar-left">
+          <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" aria-label="Menüyü Aç">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div>
+            <h1 class="topbar-page-title">Sürücü Paneli</h1>
+            <p class="topbar-page-subtitle">Hoş geldiniz, araçlarınız ve QR vizite kartlarınız aktif.</p>
+          </div>
+        </div>
+
+        <div class="dash-search-box">
+          <svg class="dash-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="globalSearchInput" class="dash-search-input" placeholder="Plaka veya model ara...">
+        </div>
+
+        <div class="topbar-right">
+          <!-- Hızlı Araç Ekle Butonu -->
+          <button class="btn btn-primary" id="openAddVehicleModalBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Araç Ekle</span>
+          </button>
+
+          <!-- Tema Değiştirici Buton -->
+          <button id="themeToggleBtn" class="icon-btn" aria-label="Temayı Değiştir" title="Tema Değiştir">
+            <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+            </svg>
+            <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Panel İçeriği -->
+      <div class="dash-content">
+
+        <!-- ==================== 1. KPI İSTATİSTİK KARTLARI ==================== -->
+        <section class="stats-grid" id="overviewSection">
+          <!-- Kart 1: Kayıtlı Araçlar -->
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Kayıtlı Araçlar</span>
+              <div class="stat-icon-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+                  <path d="M15 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+                  <path d="M5 17H3v-4l2-5h10l2 5v4h-2"></path>
+                  <path d="M9 17h6"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kpiVehicleCount">2 / 5</div>
+            <div class="stat-footer">
+              <span class="trend-badge trend-up">✓ Aktif</span>
+              <span>3 ek araç kotanız var</span>
+            </div>
+          </div>
+
+          <!-- Kart 2: Toplam QR Taraması -->
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Toplam QR Taraması</span>
+              <div class="stat-icon-wrapper icon-blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kpiScanCount">148</div>
+            <div class="stat-footer">
+              <span class="trend-badge trend-up">+%18</span>
+              <span>Bu ay 34 yeni tarama</span>
+            </div>
+          </div>
+
+          <!-- Kart 3: Aktif QR Durumu -->
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Aktif QR Durumu</span>
+              <div class="stat-icon-wrapper icon-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value" id="kpiActiveQrCount">2 / 2</div>
+            <div class="stat-footer">
+              <span class="trend-badge trend-up">Canlıda</span>
+              <span>Tüm araçlar taranabilir</span>
+            </div>
+          </div>
+
+          <!-- Kart 4: Gizlilik Durumu -->
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Gizlilik Koruması</span>
+              <div class="stat-icon-wrapper icon-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-value">%100</div>
+            <div class="stat-footer">
+              <span class="trend-badge trend-up">Güvende</span>
+              <span>Telefon numaranız maskeli</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 2. ARAÇLARIM VE QR KODLAR ==================== -->
+        <section id="vehiclesSection">
+          <div class="dash-section-header">
+            <div>
+              <h2 class="dash-section-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+                  <path d="M15 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+                  <path d="M5 17H3v-4l2-5h10l2 5v4h-2"></path>
+                  <path d="M9 17h6"></path>
+                </svg>
+                <span>Araçlarım & QR Kodlar</span>
+              </h2>
+              <p class="dash-section-desc">Kayıtlı araçlarınız için oluşturulmuş dinamik QR vizite kodları ve canlı durumları.</p>
+            </div>
+            <button class="btn btn-outline" id="addNewVehicleTriggerBtn">
+              + Yeni Araç Kaydet
+            </button>
+          </div>
+
+          <!-- Araç Kartları Grid -->
+          <div class="vehicles-grid" id="vehiclesGridContainer">
+
+            <!-- Araç Kartı 1: 34 VZT 66 -->
+            <article class="vehicle-card" data-plate="34 VZT 66" data-brand="BMW 320i Sedan">
+              <div class="vehicle-card-top">
+                <div>
+                  <div class="turk-plaka">
+                    <span class="plaka-tr-band">TR</span>
+                    <span class="plaka-text">34 VZT 66</span>
+                  </div>
+                  <div class="vehicle-title-wrap">
+                    <h3 class="vehicle-model-name">BMW 320i M Sport (2022)</h3>
+                    <p class="vehicle-sub-info">Metalik Gri • Bireysel Kullanım</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Durum Switch -->
+              <div class="status-switch-row">
+                <div class="status-label">
+                  <span class="status-dot"></span>
+                  <span>QR İletişimi Aktif</span>
+                </div>
+                <label class="switch-toggle" title="QR'ı Aç / Kapat">
+                  <input type="checkbox" checked onchange="toggleVehicleStatus(this, '34 VZT 66')">
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+              <!-- Mini QR ve İstatistikler -->
+              <div class="vehicle-body-flex">
+                <div class="vehicle-mini-qr" onclick="openQrModal('34 VZT 66', 'BMW 320i M Sport')" title="Büyük QR ve Baskı Önizlemesi">
+                  <svg viewBox="0 0 100 100" width="100%" height="100%">
+                    <rect width="100" height="100" fill="#ffffff" />
+                    <rect x="10" y="10" width="28" height="28" fill="#111" />
+                    <rect x="16" y="16" width="16" height="16" fill="#fff" />
+                    <rect x="20" y="20" width="8" height="8" fill="#111" />
+                    <rect x="62" y="10" width="28" height="28" fill="#111" />
+                    <rect x="68" y="16" width="16" height="16" fill="#fff" />
+                    <rect x="72" y="20" width="8" height="8" fill="#111" />
+                    <rect x="10" y="62" width="28" height="28" fill="#111" />
+                    <rect x="16" y="68" width="16" height="16" fill="#fff" />
+                    <rect x="20" y="72" width="8" height="8" fill="#111" />
+                    <rect x="44" y="12" width="6" height="6" fill="#111" />
+                    <rect x="52" y="20" width="6" height="14" fill="#111" />
+                    <rect x="44" y="28" width="6" height="6" fill="#111" />
+                    <rect x="12" y="44" width="8" height="8" fill="#111" />
+                    <rect x="26" y="44" width="6" height="6" fill="#111" />
+                    <rect x="36" y="44" width="8" height="8" fill="#111" />
+                    <rect x="48" y="48" width="6" height="6" fill="#f5a623" />
+                    <rect x="58" y="44" width="8" height="8" fill="#111" />
+                    <rect x="72" y="44" width="8" height="8" fill="#111" />
+                    <rect x="84" y="44" width="6" height="6" fill="#111" />
+                    <rect x="44" y="60" width="6" height="6" fill="#111" />
+                    <rect x="54" y="68" width="12" height="6" fill="#111" />
+                    <rect x="74" y="64" width="6" height="12" fill="#111" />
+                    <rect x="84" y="74" width="6" height="6" fill="#111" />
+                    <rect x="44" y="80" width="6" height="10" fill="#111" />
+                    <rect x="64" y="84" width="16" height="6" fill="#111" />
+                  </svg>
+                </div>
+                <div class="vehicle-stats-list">
+                  <div class="v-stat-row">
+                    <span class="v-stat-title">Taranma Sayısı:</span>
+                    <span class="v-stat-num">86 kez</span>
+                  </div>
+                  <div class="v-stat-row">
+                    <span class="v-stat-title">Durum:</span>
+                    <span class="v-stat-num v-stat-status-ready">Yayında</span>
+                  </div>
+                  <div class="v-stat-row">
+                    <span class="v-stat-title">Son Tarama:</span>
+                    <span class="v-stat-num">Bugün 14:20</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- İşlem Butonları -->
+              <div class="vehicle-card-actions">
+                <button class="btn btn-outline" onclick="openQrModal('34 VZT 66', 'BMW 320i M Sport')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>QR İndir / Yazdır</span>
+                </button>
+              </div>
+            </article>
+
+            <!-- Araç Kartı 2: 06 ANK 1923 -->
+            <article class="vehicle-card" data-plate="06 ANK 1923" data-brand="Volkswagen Golf">
+              <div class="vehicle-card-top">
+                <div>
+                  <div class="turk-plaka">
+                    <span class="plaka-tr-band">TR</span>
+                    <span class="plaka-text">06 ANK 1923</span>
+                  </div>
+                  <div class="vehicle-title-wrap">
+                    <h3 class="vehicle-model-name">Volkswagen Golf 1.5 eTSI (2021)</h3>
+                    <p class="vehicle-sub-info">Saf Beyaz • Bireysel Kullanım</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Durum Switch -->
+              <div class="status-switch-row">
+                <div class="status-label">
+                  <span class="status-dot"></span>
+                  <span>QR İletişimi Aktif</span>
+                </div>
+                <label class="switch-toggle" title="QR'ı Aç / Kapat">
+                  <input type="checkbox" checked onchange="toggleVehicleStatus(this, '06 ANK 1923')">
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+
+              <!-- Mini QR ve İstatistikler -->
+              <div class="vehicle-body-flex">
+                <div class="vehicle-mini-qr" onclick="openQrModal('06 ANK 1923', 'Volkswagen Golf')" title="Büyük QR ve Baskı Önizlemesi">
+                  <svg viewBox="0 0 100 100" width="100%" height="100%">
+                    <rect width="100" height="100" fill="#ffffff" />
+                    <rect x="10" y="10" width="28" height="28" fill="#111" />
+                    <rect x="16" y="16" width="16" height="16" fill="#fff" />
+                    <rect x="20" y="20" width="8" height="8" fill="#111" />
+                    <rect x="62" y="10" width="28" height="28" fill="#111" />
+                    <rect x="68" y="16" width="16" height="16" fill="#fff" />
+                    <rect x="72" y="20" width="8" height="8" fill="#111" />
+                    <rect x="10" y="62" width="28" height="28" fill="#111" />
+                    <rect x="16" y="68" width="16" height="16" fill="#fff" />
+                    <rect x="20" y="72" width="8" height="8" fill="#111" />
+                    <rect x="46" y="14" width="8" height="8" fill="#111" />
+                    <rect x="46" y="26" width="8" height="8" fill="#111" />
+                    <rect x="14" y="46" width="12" height="6" fill="#111" />
+                    <rect x="30" y="46" width="8" height="8" fill="#111" />
+                    <rect x="48" y="44" width="8" height="8" fill="#f5a623" />
+                    <rect x="64" y="46" width="6" height="6" fill="#111" />
+                    <rect x="76" y="46" width="12" height="6" fill="#111" />
+                    <rect x="46" y="62" width="8" height="8" fill="#111" />
+                    <rect x="60" y="66" width="6" height="12" fill="#111" />
+                    <rect x="74" y="64" width="10" height="6" fill="#111" />
+                    <rect x="46" y="78" width="8" height="10" fill="#111" />
+                    <rect x="66" y="80" width="12" height="8" fill="#111" />
+                  </svg>
+                </div>
+                <div class="vehicle-stats-list">
+                  <div class="v-stat-row">
+                    <span class="v-stat-title">Taranma Sayısı:</span>
+                    <span class="v-stat-num">62 kez</span>
+                  </div>
+                  <div class="v-stat-row">
+                    <span class="v-stat-title">Durum:</span>
+                    <span class="v-stat-num v-stat-status-ready">Yayında</span>
+                  </div>
+                  <div class="v-stat-row">
+                    <span class="v-stat-title">Son Tarama:</span>
+                    <span class="v-stat-num">Dün 19:45</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- İşlem Butonları -->
+              <div class="vehicle-card-actions">
+                <button class="btn btn-outline" onclick="openQrModal('06 ANK 1923', 'Volkswagen Golf')">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>QR İndir / Yazdır</span>
+                </button>
+              </div>
+            </article>
+
+            <!-- Yeni Araç Ekle Slot Kartı -->
+            <div class="add-vehicle-slot-card" id="slotAddVehicleCard" onclick="openAddVehicleModal()">
+              <div class="add-vehicle-icon-ring">+</div>
+              <h3 class="add-slot-title">Yeni Araç Tanımla</h3>
+              <p class="add-slot-desc">
+                Mevcut Pro paketinizde 3 adet boş araç kotanız bulunmaktadır.
+              </p>
+              <span class="btn btn-outline btn-xs add-slot-btn">Hemen Ekle</span>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==================== 3. TARAMA ANALİTİĞİ ==================== -->
+        <section class="notif-section-card" id="analyticsSection">
+          <div class="dash-section-header">
+            <div>
+              <h2 class="dash-section-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 3v18h18"></path>
+                  <path d="m19 9-5 5-4-4-3 3"></path>
+                </svg>
+                <span>Haftalık Tarama ve Aktivite Analitiği</span>
+              </h2>
+              <p class="dash-section-desc">Araçlarınızın QR kodlarının günlere göre taranma sıklığı ve yoğunluk saatleri.</p>
+            </div>
+            <div class="chart-badge-wrap">
+              <span class="trend-badge trend-up">En yoğun: Cuma & Cumartesi</span>
+            </div>
+          </div>
+
+          <!-- Semantik CSS Çubuk Grafiği (Bar Chart) -->
+          <div class="chart-bars-container">
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">12</span>
+              <div class="chart-bar h-45"></div>
+              <span class="chart-bar-day">Pzt</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">18</span>
+              <div class="chart-bar h-65"></div>
+              <span class="chart-bar-day">Sal</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">15</span>
+              <div class="chart-bar h-55"></div>
+              <span class="chart-bar-day">Çar</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">22</span>
+              <div class="chart-bar h-80"></div>
+              <span class="chart-bar-day">Per</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val highlight">38</span>
+              <div class="chart-bar highlight h-130"></div>
+              <span class="chart-bar-day highlight">Cum</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val highlight">29</span>
+              <div class="chart-bar highlight h-105"></div>
+              <span class="chart-bar-day highlight">Cmt</span>
+            </div>
+            <div class="chart-bar-col">
+              <span class="chart-bar-val">14</span>
+              <div class="chart-bar h-50"></div>
+              <span class="chart-bar-day">Paz</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 4. GİZLİLİK VE İLETİŞİM AYARLARI ==================== -->
+        <section class="settings-grid" id="settingsSection">
+          
+          <!-- Sol Kart: İletişim Kanalları -->
+          <div class="settings-card">
+            <h3 class="settings-card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <span>İletişim & Gizlilik Tercihleri</span>
+            </h3>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-name">WhatsApp Maskeli İletişim</span>
+                <span class="setting-hint">Numaranız karşı tarafa görünmeden WhatsApp botu üzerinden anonim iletişim sağlayın.</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-name">SMS Acil Çağrı Yönlendirmesi</span>
+                <span class="setting-hint">Acil durumlarda telefon numaranız maskelenerek SMS yönlendirmesi yapılsın.</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-name">Haftalık E-posta Raporu</span>
+                <span class="setting-hint">Haftalık tarama raporları e-postanıza gönderilsin.</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox">
+                <span class="slider-round"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sağ Kart: Güvenlik ve Rahatsız Etmeme -->
+          <div class="settings-card">
+            <h3 class="settings-card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Gizlilik & Rahatsız Etmeme Modu</span>
+            </h3>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-name">Gece Sessiz Modu (23:00 - 08:00)</span>
+                <span class="setting-hint">Gece saatlerinde acil durumlar harici yönlendirmeleri sessize alır.</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-name">Spam & Bot Filtresi</span>
+                <span class="setting-hint">Aynı IP'den 10 dakika içinde mükerrer taramaları otomatik filtreler.</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-name">Konum Doğrulama</span>
+                <span class="setting-hint">QR'ı okutan kişinin araç yakınında olduğunu teyit eder.</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================== MODAL 1: YENİ ARAÇ EKLE ==================== -->
+  <div class="modal-backdrop" id="addVehicleModal">
+    <div class="modal-dialog">
+      <button class="modal-close" onclick="closeAddVehicleModal()" aria-label="Kapat">&times;</button>
+      <div class="modal-heading-wrap">
+        <h2 class="modal-heading-title">Yeni Araç Tanımla</h2>
+        <p class="modal-heading-desc">
+          Aracınız için özel ve güvenli anonim QR kod oluşturulacaktır.
+        </p>
+      </div>
+
+      <form id="addVehicleForm" onsubmit="handleNewVehicleSubmit(event)">
+        <div class="form-group">
+          <label for="inputPlate">Araç Plakası</label>
+          <input type="text" id="inputPlate" class="input-plate-uppercase" placeholder="Örn: 34 ABC 789" required>
+        </div>
+
+        <div class="form-group">
+          <label for="inputBrand">Marka ve Model</label>
+          <input type="text" id="inputBrand" placeholder="Örn: Audi A3 Sedan" required>
+        </div>
+
+        <div class="form-group">
+          <label for="inputColor">Renk ve Tip</label>
+          <input type="text" id="inputColor" placeholder="Örn: Siyah • Sedan" value="Beyaz • Otomobil">
+        </div>
+
+        <div class="form-group">
+          <label for="inputNote">Özel Park Notu (İsteğe Bağlı)</label>
+          <input type="text" id="inputNote" placeholder="Örn: Çıkış engeli olursa lütfen arayınız.">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+          QR Kodu Üret ve Aracı Kaydet
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: QR KOD & ÖN CAM ETİKETİ ÖNİZLEMESİ ==================== -->
+  <div class="modal-backdrop" id="qrModal">
+    <div class="modal-dialog qr-modal-dialog">
+      <button class="modal-close" onclick="closeQrModal()" aria-label="Kapat">&times;</button>
+      
+      <h2 class="modal-heading-title" id="qrModalTitle">Ön Cam QR Vizite Kartı</h2>
+      <p class="modal-heading-desc">
+        Bu etiketi aracınızın ön camına yapıştırarak telefon numaranızı gizli tutabilirsiniz.
+      </p>
+
+      <!-- Çıkartma Kartı (Gerçekçi Baskı Mockup'ı) -->
+      <div class="sticker-preview-card" id="printableSticker">
+        <div class="sticker-header">
+          <svg width="24" height="24" viewBox="0 0 36 36" fill="none">
+            <path d="M7 26C11 18 25 18 29 26" stroke="#F5A623" stroke-width="4" stroke-linecap="round" />
+            <path d="M12 18C15 13 21 13 24 18" stroke="#F5A623" stroke-width="3" stroke-linecap="round" />
+            <circle cx="9" cy="27" r="3" fill="#F5A623" />
+            <circle cx="27" cy="27" r="3" fill="#F5A623" />
+          </svg>
+          <span>66 VİZİTE</span>
+        </div>
+
+        <div class="sticker-plate-box" id="stickerPlateText">34 VZT 66</div>
+
+        <div class="sticker-qr-wrapper">
+          <svg class="sticker-qr-svg" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#ffffff" />
+            <rect x="10" y="10" width="28" height="28" fill="#111" />
+            <rect x="16" y="16" width="16" height="16" fill="#fff" />
+            <rect x="20" y="20" width="8" height="8" fill="#111" />
+            <rect x="62" y="10" width="28" height="28" fill="#111" />
+            <rect x="68" y="16" width="16" height="16" fill="#fff" />
+            <rect x="72" y="20" width="8" height="8" fill="#111" />
+            <rect x="10" y="62" width="28" height="28" fill="#111" />
+            <rect x="16" y="68" width="16" height="16" fill="#fff" />
+            <rect x="20" y="72" width="8" height="8" fill="#111" />
+            <rect x="44" y="12" width="6" height="6" fill="#111" />
+            <rect x="52" y="20" width="6" height="14" fill="#111" />
+            <rect x="44" y="28" width="6" height="6" fill="#111" />
+            <rect x="12" y="44" width="8" height="8" fill="#111" />
+            <rect x="26" y="44" width="6" height="6" fill="#111" />
+            <rect x="36" y="44" width="8" height="8" fill="#111" />
+            <rect x="48" y="48" width="6" height="6" fill="#f5a623" />
+            <rect x="58" y="44" width="8" height="8" fill="#111" />
+            <rect x="72" y="44" width="8" height="8" fill="#111" />
+            <rect x="84" y="44" width="6" height="6" fill="#111" />
+            <rect x="44" y="60" width="6" height="6" fill="#111" />
+            <rect x="54" y="68" width="12" height="6" fill="#111" />
+            <rect x="74" y="64" width="6" height="12" fill="#111" />
+            <rect x="84" y="74" width="6" height="6" fill="#111" />
+            <rect x="44" y="80" width="6" height="10" fill="#111" />
+            <rect x="64" y="84" width="16" height="6" fill="#111" />
+          </svg>
+        </div>
+
+        <p class="sticker-footer-note">
+          Araç Sahibine Anonim Ulaşmak İçin Kameranızla Okutunuz
+        </p>
+      </div>
+
+      <div class="modal-actions-row">
+        <button class="btn btn-primary" onclick="printSticker()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>PDF / Yazdır</span>
+        </button>
+        <button class="btn btn-outline" onclick="downloadStickerPng()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>PNG Olarak Kaydet</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT ETKİLEŞİM MANTIĞI ==================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Tema Değiştirici (Dark / Light Mode)
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme');
+          const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', nextTheme);
+          localStorage.setItem('theme', nextTheme);
+        });
+      }
+
+      // 2. Mobil Sidebar Açma / Kapama
+      const sidebarToggleMobile = document.getElementById('sidebarToggleMobile');
+      const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+      const dashSidebar = document.getElementById('dashSidebar');
+
+      if (sidebarToggleMobile && dashSidebar) {
+        sidebarToggleMobile.addEventListener('click', () => {
+          dashSidebar.classList.add('open');
+        });
+      }
+
+      if (sidebarCloseBtn && dashSidebar) {
+        sidebarCloseBtn.addEventListener('click', () => {
+          dashSidebar.classList.remove('open');
+        });
+      }
+
+      // 3. Oturum Açmış Kullanıcı Bilgilerini Çekme (Varsa localStorage)
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          const userObj = JSON.parse(storedUser);
+          if (userObj.fullName) {
+            document.getElementById('userDisplayName').textContent = userObj.fullName;
+            const initials = userObj.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userAvatarText').textContent = initials;
+          }
+        } catch (e) {}
+      }
+
+      // 4. Çıkış Butonu
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          if (confirm('Oturumu kapatmak ve ana sayfaya dönmek istiyor musunuz?')) {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+          }
+        });
+      }
+
+      // 5. Arama Çubuğu Canlı Filtreleme
+      const searchInput = document.getElementById('globalSearchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase().trim();
+          
+          // Araçları filtrele
+          document.querySelectorAll('.vehicle-card').forEach(card => {
+            const plate = (card.getAttribute('data-plate') || '').toLowerCase();
+            const brand = (card.getAttribute('data-brand') || '').toLowerCase();
+            if (plate.includes(query) || brand.includes(query)) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      }
+
+      // 6. Modal Tetikleyicileri
+      const openAddBtn = document.getElementById('openAddVehicleModalBtn');
+      if (openAddBtn) {
+        openAddBtn.addEventListener('click', openAddVehicleModal);
+      }
+
+      // 7. Navigasyon Sekmeleri Aktiflik Durumu
+      const navLinks = document.querySelectorAll('.dash-nav-link');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          if (this.getAttribute('href').startsWith('#')) {
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            if (window.innerWidth <= 860 && dashSidebar) {
+              dashSidebar.classList.remove('open');
+            }
+          }
+        });
+      });
+    });
+
+    // ==================== FONKSİYONLAR ====================
+
+    // Araç QR Durumu Aç / Kapat
+    function toggleVehicleStatus(checkbox, plate) {
+      const isChecked = checkbox.checked;
+      const statusLabel = checkbox.closest('.status-switch-row').querySelector('.status-label');
+      const dot = statusLabel.querySelector('.status-dot');
+      const text = statusLabel.querySelector('span:last-child');
+
+      if (isChecked) {
+        dot.classList.remove('inactive');
+        text.textContent = 'QR İletişimi Aktif';
+      } else {
+        dot.classList.add('inactive');
+        text.textContent = 'QR Geçici Olarak Kapalı';
+      }
+    }
+
+    // QR Önizleme Modalı
+    function openQrModal(plate, brand) {
+      document.getElementById('stickerPlateText').textContent = plate;
+      document.getElementById('qrModalTitle').textContent = `${plate} - QR Vizite Kartı`;
+      document.getElementById('qrModal').classList.add('open');
+    }
+
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.remove('open');
+    }
+
+    // Yeni Araç Modalı
+    function openAddVehicleModal() {
+      document.getElementById('addVehicleModal').classList.add('open');
+      document.getElementById('inputPlate').focus();
+    }
+
+    function closeAddVehicleModal() {
+      document.getElementById('addVehicleModal').classList.remove('open');
+    }
+
+    // Yeni Araç Kayıt Formu
+    function handleNewVehicleSubmit(e) {
+      e.preventDefault();
+      const plate = document.getElementById('inputPlate').value.trim().toUpperCase();
+      const brand = document.getElementById('inputBrand').value.trim();
+      const color = document.getElementById('inputColor').value.trim();
+
+      if (!plate || !brand) return;
+
+      // Yeni Kart Oluştur
+      const newCard = document.createElement('article');
+      newCard.className = 'vehicle-card';
+      newCard.setAttribute('data-plate', plate);
+      newCard.setAttribute('data-brand', brand);
+      newCard.innerHTML = `
+        <div class="vehicle-card-top">
+          <div>
+            <div class="turk-plaka">
+              <span class="plaka-tr-band">TR</span>
+              <span class="plaka-text">${plate}</span>
+            </div>
+            <div class="vehicle-title-wrap">
+              <h3 class="vehicle-model-name">${brand}</h3>
+              <p class="vehicle-sub-info">${color}</p>
+            </div>
+          </div>
+        </div>
+        <div class="status-switch-row">
+          <div class="status-label">
+            <span class="status-dot"></span>
+            <span>QR İletişimi Aktif</span>
+          </div>
+          <label class="switch-toggle" title="QR'ı Aç / Kapat">
+            <input type="checkbox" checked onchange="toggleVehicleStatus(this, '${plate}')">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <div class="vehicle-body-flex">
+          <div class="vehicle-mini-qr" onclick="openQrModal('${plate}', '${brand}')" title="Büyük QR Önizlemesi">
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+              <rect width="100" height="100" fill="#ffffff" />
+              <rect x="10" y="10" width="28" height="28" fill="#111" />
+              <rect x="16" y="16" width="16" height="16" fill="#fff" />
+              <rect x="20" y="20" width="8" height="8" fill="#111" />
+              <rect x="62" y="10" width="28" height="28" fill="#111" />
+              <rect x="68" y="16" width="16" height="16" fill="#fff" />
+              <rect x="72" y="20" width="8" height="8" fill="#111" />
+              <rect x="10" y="62" width="28" height="28" fill="#111" />
+              <rect x="16" y="68" width="16" height="16" fill="#fff" />
+              <rect x="20" y="72" width="8" height="8" fill="#111" />
+              <rect x="46" y="16" width="8" height="8" fill="#111" />
+              <rect x="48" y="48" width="8" height="8" fill="#f5a623" />
+              <rect x="64" y="64" width="8" height="8" fill="#111" />
+            </svg>
+          </div>
+          <div class="vehicle-stats-list">
+            <div class="v-stat-row">
+              <span class="v-stat-title">Taranma Sayısı:</span>
+              <span class="v-stat-num">0 kez (Yeni)</span>
+            </div>
+            <div class="v-stat-row">
+              <span class="v-stat-title">Durum:</span>
+              <span class="v-stat-num v-stat-status-ready">Kullanıma Hazır</span>
+            </div>
+            <div class="v-stat-row">
+              <span class="v-stat-title">Son Tarama:</span>
+              <span class="v-stat-num">-</span>
+            </div>
+          </div>
+        </div>
+        <div class="vehicle-card-actions">
+          <button class="btn btn-outline" onclick="openQrModal('${plate}', '${brand}')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>QR İndir / Yazdır</span>
+          </button>
+        </div>
+      `;
+
+      const grid = document.getElementById('vehiclesGridContainer');
+      const slotCard = document.getElementById('slotAddVehicleCard');
+      grid.insertBefore(newCard, slotCard);
+
+      // Sayacı Güncelle
+      const currentCount = document.querySelectorAll('.vehicle-card').length;
+      document.getElementById('navVehiclesCount').textContent = currentCount;
+      document.getElementById('kpiVehicleCount').textContent = `${currentCount} / 5`;
+      document.getElementById('kpiActiveQrCount').textContent = `${currentCount} / ${currentCount}`;
+
+      closeAddVehicleModal();
+      document.getElementById('addVehicleForm').reset();
+      alert(`✅ ${plate} plakalı ${brand} aracı başarıyla sisteme eklendi ve QR kodu üretildi!`);
+    }
+
+    // Baskı ve İndirme
+    function printSticker() {
+      window.print();
+    }
+
+    function downloadStickerPng() {
+      alert('QR Vizite etiketi yüksek çözünürlüklü olarak hazırlandı. Baskı almak için PDF/Yazdır seçeneğini de kullanabilirsiniz.');
+    }
+  </script>
+</body>
+
+</html>

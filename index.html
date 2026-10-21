@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>66 Vizite - Aracınıza Güvenli İletişim Köprüsü</title>
+  <meta name="description"
+    content="QR kod ile araç ve eşyalarınıza anonim bildirim sistemi. Telefon numaranızı paylaşmayın.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ==================== HEADER & NAVBAR ==================== -->
+  <header class="navbar-header">
+    <div class="container navbar-container">
+      <a href="#" class="brand-logo">
+        <svg class="brand-icon" viewBox="0 0 36 36" fill="none">
+          <path d="M7 26C11 18 25 18 29 26" stroke="#F5A623" stroke-width="4" stroke-linecap="round" />
+          <path d="M12 18C15 13 21 13 24 18" stroke="#F5A623" stroke-width="3" stroke-linecap="round" />
+          <circle cx="9" cy="27" r="3" fill="#F5A623" />
+          <circle cx="27" cy="27" r="3" fill="#F5A623" />
+        </svg>
+        <span class="brand-name">66 Vizite</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#nasil-calisir" class="nav-link" data-i18n="nav.howItWorks">Nasıl Çalışır</a>
+        <a href="#fiyatlandirma" class="nav-link" data-i18n="nav.pricing">Fiyatlandırma</a>
+        <a href="dashboard.html" class="nav-link nav-link-accent">Panel</a>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Tema Değiştirici -->
+        <button id="themeToggleBtn" class="icon-btn" aria-label="Temayı Değiştir" title="Tema">
+          <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+          <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+
+
+        <!-- Giriş Yap (Gelecek Aşama Entegrasyonu) -->
+        <button class="btn btn-outline" id="loginModalTrigger" data-i18n="nav.login">Giriş Yap</button>
+
+        <!-- Ücretsiz Başla -->
+        <a href="#fiyatlandirma" class="btn btn-primary" data-i18n="nav.getStarted">Ücretsiz Başla</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================== HERO BÖLÜMÜ (Görsel 1) ==================== -->
+    <section class="hero-section">
+      <div class="container hero-container text-center">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            <span data-i18n="hero.title1">Aracınıza güvenli</span><br>
+            <span data-i18n="hero.title2">iletişim köprüsü.</span><br>
+            <span class="highlight-text" data-i18n="hero.title3">Senin araban senin kuralların</span>
+          </h1>
+
+          <p class="hero-description" data-i18n="hero.desc">
+            
+          </p>
+
+          <div class="hero-buttons">
+            <a href="#fiyatlandirma" class="btn btn-primary btn-large" data-i18n="hero.ctaPrimary">Ücretsiz Başla</a>
+            <a href="#nasil-calisir" class="btn btn-secondary btn-large">
+              <span data-i18n="hero.ctaSecondary">Nasıl Çalışır?</span>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3 ADIMDA BAŞLAYIN (Görsel 2) ==================== -->
+    <section class="steps-section" id="nasil-calisir">
+      <div class="container text-center">
+        <h2 class="section-title" data-i18n="steps.title">3 adımda başlayın</h2>
+        <p class="section-subtitle" data-i18n="steps.subtitle">Karmaşık kurulum yok. Gizliliğinizi dakikalar içinde
+          koruyun.</p>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-icon-wrapper">
+              <span class="step-number">1</span>
+              <svg viewBox="0 0 24 24" class="step-svg" fill="none" stroke="#000" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+            </div>
+            <h3 class="step-name" data-i18n="steps.step1Title">Kayıt Olun</h3>
+            <p class="step-desc" data-i18n="steps.step1Desc">Ücretsiz hesap oluşturun ve bir plan seçin</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-icon-wrapper">
+              <span class="step-number">2</span>
+              <svg viewBox="0 0 24 24" class="step-svg" fill="none" stroke="#000" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </div>
+            <h3 class="step-name" data-i18n="steps.step2Title">QR Kodu Alın</h3>
+            <p class="step-desc" data-i18n="steps.step2Desc">Dijital QR kodunuzu indirin ve aracınıza yapıştırın</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-icon-wrapper">
+              <span class="step-number">3</span>
+              <svg viewBox="0 0 24 24" class="step-svg" fill="none" stroke="#000" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2-4H8L6 10l-2.5 1.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2">
+                </path>
+                <circle cx="7" cy="17" r="2"></circle>
+                <circle cx="17" cy="17" r="2"></circle>
+              </svg>
+            </div>
+            <h3 class="step-name" data-i18n="steps.step3Title">Güvenli Park</h3>
+            <p class="step-desc" data-i18n="steps.step3Desc">Araçınızı gönül rahatlığıyla park edin.</p>
+          </div>
+        </div>
+
+        <div class="steps-cta">
+          <a href="#fiyatlandirma" class="btn btn-primary btn-large">
+            <span data-i18n="steps.ctaBtn">Hemen Başla — Ücretsiz</span>
+            <span class="arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== KULLANICILARIMIZ NE DİYOR (Görsel 3) ==================== -->
+    <section class="testimonials-section">
+      <div class="container text-center">
+        <h2 class="section-title" data-i18n="testimonials.title">Kullanıcılarımız ne diyor?</h2>
+
+        <div class="testimonials-grid">
+          <!-- Yorum 1 -->
+          <div class="testimonial-card">
+            <div class="quote-mark">“</div>
+            <div class="stars">★★</div>
+            <p class="quote-text" data-i18n="testimonials.t1Text">
+              “Apartmanın önünde aracıma çarpan komşu QR'ı tarayıp bana bildirim gönderdi. Hasar büyümeden hallettik.”
+            </p>
+            <div class="user-meta">
+              <div class="avatar">E</div>
+              <span class="user-name">Emre K.</span>
+            </div>
+          </div>
+
+          <!-- Yorum 2 -->
+          <div class="testimonial-card">
+            <div class="quote-mark">“</div>
+            <div class="stars">★★★★★</div>
+            <p class="quote-text" data-i18n="testimonials.t2Text">
+              “Motoru dar sokağa park etmiştim. Esnaf QR'ı tarayıp devrilme tehlikesini bildirdi.”
+            </p>
+            <div class="user-meta">
+              <div class="avatar">C</div>
+              <span class="user-name">Can T.</span>
+            </div>
+          </div>
+
+          <!-- Yorum 3 -->
+          <div class="testimonial-card">
+            <div class="quote-mark">“</div>
+            <div class="stars">★★★</div>
+            <p class="quote-text" data-i18n="testimonials.t3Text">
+              “Destek konusunda biraz zayıflar ama hizmeti beğeniyorum.”
+            </p>
+            <div class="user-meta">
+              <div class="avatar">Z</div>
+              <span class="user-name">Zeynep A.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FİYATLANDIRMA (Görsel 4) ==================== -->
+    <section class="pricing-section" id="fiyatlandirma">
+      <div class="container text-center">
+        <div class="pricing-grid">
+          <!-- Free Plan -->
+          <div class="pricing-card">
+            <div class="pricing-header">
+              <h3 class="plan-name">Free</h3>
+              <p class="plan-desc" data-i18n="pricing.freeDesc">Başlamak için ideal</p>
+              <div class="plan-price">
+                <span class="amount">₺0</span>
+                <span class="duration" data-i18n="pricing.forever">/sonsuza dek</span>
+              </div>
+            </div>
+            <ul class="feature-list">
+              <li><span class="check">✓</span> <span data-i18n="pricing.f1">Standart Qr Vizite</span></li>
+              <li><span class="check">✓</span> <span data-i18n="pricing.f2">1 Araç</span></li>
+              <li><span class="check">✓</span> <span data-i18n="pricing.f3">7 gün deneme sonrası ücretlendirme</span>
+              </li>
+              <li><span class="check">✓</span> <span data-i18n="pricing.f4">Temel destek</span></li>
+            </ul>
+            <div class="pricing-footer">
+              <button class="btn btn-card-outline" data-i18n="pricing.freeBtn">Ücretsiz Başla</button>
+            </div>
+          </div>
+
+          <!-- Pro Plan (Öne Çıkan) -->
+          <div class="pricing-card featured-card">
+            <div class="popular-badge">
+
+              <span>Popüler</span>
+
+            </div>
+            <div class="pricing-header">
+              <h3 class="plan-name">Pro</h3>
+              <p class="plan-desc" data-i18n="pricing.proDesc">Profesyoneller için</p>
+              <div class="plan-price">
+                <span class="amount">₺299</span>
+                <span class="duration" data-i18n="pricing.perMonth">/ay</span>
+              </div>
+            </div>
+            <ul class="feature-list">
+              <li><span class="check highlight-check">✓</span> <span data-i18n="pricing.pro1">Geliştirilebilir Qr
+                  Vizite</span></li>
+              <li><span class="check highlight-check">✓</span> <span data-i18n="pricing.pro2">5 Araç</span></li>
+              <li><span class="check highlight-check">✓</span> <span data-i18n="pricing.pro4">Hızlı erişim</span></li>
+              <li><span class="check highlight-check">✓</span> <span data-i18n="pricing.pro5">Öncelikli destek</span>
+              </li>
+            </ul>
+            <div class="pricing-footer">
+              <a href="register.html" class="btn btn-primary btn-full" data-i18n="pricing.proBtn">Pro'ya Geçin</a>
+            </div>
+          </div>
+
+          <!-- Business Plan -->
+          <div class="pricing-card">
+            <div class="pricing-header">
+              <h3 class="plan-name">Business</h3>
+              <p class="plan-desc" data-i18n="pricing.bizDesc">Takımlar ve işletmeler için</p>
+              <div class="plan-price">
+                <span class="amount">₺899</span>
+                <span class="duration" data-i18n="pricing.perMonth">/ay</span>
+              </div>
+            </div>
+            <ul class="feature-list">
+              <li><span class="check">✓</span> <span data-i18n="pricing.biz1">Sınırsız araç</span></li>
+              <li><span class="check">✓</span> <span data-i18n="pricing.biz2">Sınırsız QR kod</span></li>
+              <li><span class="check">✓</span> <span data-i18n="pricing.biz3">Sınırsız Destek</span></li>
+              <li><span class="check">✓</span> <span data-i18n="pricing.biz5">API erişimi</span></li>
+            </ul>
+            <div class="pricing-footer">
+              <button class="btn btn-card-outline" data-i18n="pricing.bizBtn">İletişime Geçin</button>
+            </div>
+          </div>
+        </div>
+    </section>
+  </main>
+
+  <!-- ==================== FOOTER (Görsel 5) ==================== -->
+  <footer class="main-footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <a href="#" class="brand-logo">
+          <svg class="brand-icon" viewBox="0 0 36 36" fill="none">
+            <path d="M7 26C11 18 25 18 29 26" stroke="#F5A623" stroke-width="4" stroke-linecap="round" />
+            <path d="M12 18C15 13 21 13 24 18" stroke="#F5A623" stroke-width="3" stroke-linecap="round" />
+            <circle cx="9" cy="27" r="3" fill="#F5A623" />
+            <circle cx="27" cy="27" r="3" fill="#F5A623" />
+          </svg>
+          <span class="brand-name">66 Vizite</span>
+        </a>
+        <p class="footer-tagline" data-i18n="footer.tagline">
+          QR kod ile araç ve eşyalarınıza güvenli iletişim köprüsü.
+        </p>
+      </div>
+
+      <div class="footer-links-grid">
+        <div class="footer-col">
+          <h4 class="col-title" data-i18n="footer.col1">Ürün</h4>
+          <ul>
+            <li><a href="#" data-i18n="footer.col1_item1">Şirket</a></li>
+            <li><a href="#" data-i18n="footer.col1_item2">Ürün</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4 class="col-title" data-i18n="footer.col2">Şirket</h4>
+          <ul>
+            <li><a href="#" data-i18n="footer.col2_item1">Hakkımızda</a></li>
+            <li><a href="#" data-i18n="footer.col2_item3">İletişim</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col"> <br>
+
+        </div> <br>
+
+        <div class="footer-bottom">
+          <div class="container text-center">
+            <p data-i18n="footer.copyright">© 2026 66 Vizite. Tüm hakları saklıdır.</p>
+          </div>
+        </div>
+  </footer>
+
+  <!-- ==================== GİRİŞ & KAYIT MODAL İSKELETİ (Gelecek Aşama İçin Hazır) ==================== -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Kapat">&times;</button>
+      <div class="modal-tabs">
+        <button class="tab-btn active" id="tabLogin" data-i18n="auth.tabLogin">Giriş Yap</button>
+        <button class="tab-btn" id="tabRegister" data-i18n="auth.tabRegister">Kayıt Ol</button>
+      </div>
+
+      <!-- Giriş Formu (Temel HTML Formu) -->
+      <form id="loginForm" class="auth-form active" action="#" method="POST">
+        <div class="form-group">
+          <label for="loginEmail" data-i18n="auth.email">E-posta Adresi</label>
+          <input type="email" id="loginEmail" name="email" placeholder="ornek@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword" data-i18n="auth.password">Şifre</label>
+          <input type="password" id="loginPassword" name="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" data-i18n="auth.submitLogin">Giriş Yap</button>
+      </form>
+
+      <!-- Kayıt Formu (Temel HTML Formu) -->
+      <form id="registerForm" class="auth-form" action="#" method="POST">
+        <div class="form-group">
+          <label for="regName" data-i18n="auth.fullname">Ad Soyad</label>
+          <input type="text" id="regName" name="fullname" placeholder="Adınız Soyadınız" required>
+        </div>
+        <div class="form-group">
+          <label for="regEmail" data-i18n="auth.email">E-posta Adresi</label>
+          <input type="email" id="regEmail" name="email" placeholder="ornek@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="regPassword" data-i18n="auth.password">Şifre</label>
+          <input type="password" id="regPassword" name="password" placeholder="Şifreniz" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" data-i18n="auth.submitRegister">Kayıt Ol</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

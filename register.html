@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kayıt Ol - 66 Vizite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .auth-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .auth-header .brand-logo {
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .auth-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .auth-header p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .auth-form-card {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 24px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .back-home:hover {
+      color: var(--accent-yellow);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-page-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <a href="index.html" class="brand-logo">
+          <svg class="brand-icon" viewBox="0 0 36 36" fill="none">
+            <path d="M7 26C11 18 25 18 29 26" stroke="#F5A623" stroke-width="4" stroke-linecap="round" />
+            <path d="M12 18C15 13 21 13 24 18" stroke="#F5A623" stroke-width="3" stroke-linecap="round" />
+            <circle cx="9" cy="27" r="3" fill="#F5A623" />
+            <circle cx="27" cy="27" r="3" fill="#F5A623" />
+          </svg>
+          <span class="brand-name">66 Vizite</span>
+        </a>
+        <h1>Hesap Oluştur</h1>
+        <p>Pro pakete başlamak ve aracınızı eklemek için kaydolun.</p>
+      </div>
+
+      <!-- Temel Kayıt Formu -->
+      <form id="pageRegisterForm" class="auth-form-card" action="/api/auth/register" method="POST">
+        <div class="form-group">
+          <label for="name">Ad Soyad</label>
+          <input type="text" id="name" name="fullName" placeholder="Adınız Soyadınız" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-posta Adresi</label>
+          <input type="email" id="email" name="email" placeholder="ornek@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Şifre</label>
+          <input type="password" id="password" name="password" placeholder="En az 6 karakter" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">Kayıt Ol</button>
+      </form>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="index.html" class="back-home">← Ana Sayfaya Dön</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('pageRegisterForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!fullName || !email || !password) {
+        alert('Lütfen tüm alanları doldurunuz.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, password, planTier: 'pro' })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Tebrikler! Kayıt başarılı. Ana sayfaya yönlendiriliyorsunuz.');
+          window.location.href = 'index.html';
+        } else {
+          alert('Kayıt başarısız: ' + (data.message || 'Bilinmeyen hata'));
+        }
+      } catch (err) {
+        alert('Kayıt simülasyonu: Bilgileriniz alındı (' + fullName + '). Sunucu aktif olduğunda veritabanına işlenecektir.');
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
