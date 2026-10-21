@@ -1,0 +1,9 @@
+{
+  "name": "66vizite",
+  "version": "1.0.0",
+  "description": "66 Vizite Araç Takip ve Yönetim Platformu",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
