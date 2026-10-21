@@ -93,7 +93,8 @@
           koruyun.</p>
 
         <div class="steps-grid">
-          <div class="step-card">
+          <!-- 1. Adım: Kayıt Olun -->
+          <div class="step-card" id="stepCardRegister">
             <div class="step-icon-wrapper">
               <span class="step-number">1</span>
               <svg viewBox="0 0 24 24" class="step-svg" fill="none" stroke="#000" stroke-width="2.2"
@@ -105,10 +106,17 @@
               </svg>
             </div>
             <h3 class="step-name" data-i18n="steps.step1Title">Kayıt Olun</h3>
-            <p class="step-desc" data-i18n="steps.step1Desc">Ücretsiz hesap oluşturun ve bir plan seçin</p>
+            <p class="step-desc" data-i18n="steps.step1Desc">Ücretsiz hesabınızı saniyeler içinde açın ve aracınızı sisteme kaydedin.</p>
+            <div class="step-card-footer">
+              <button class="btn btn-primary btn-sm btn-full" id="stepBtnRegister">
+                <span>Hemen Kaydol</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
           </div>
 
-          <div class="step-card">
+          <!-- 2. Adım: QR Satın Alın & Oluşturun -->
+          <div class="step-card" id="stepCardBuyQr">
             <div class="step-icon-wrapper">
               <span class="step-number">2</span>
               <svg viewBox="0 0 24 24" class="step-svg" fill="none" stroke="#000" stroke-width="2.2"
@@ -119,11 +127,18 @@
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
             </div>
-            <h3 class="step-name" data-i18n="steps.step2Title">QR Kodu Alın</h3>
-            <p class="step-desc" data-i18n="steps.step2Desc">Dijital QR kodunuzu indirin ve aracınıza yapıştırın</p>
+            <h3 class="step-name" data-i18n="steps.step2Title">QR Satın Alın</h3>
+            <p class="step-desc" data-i18n="steps.step2Desc">Dijital QR kodunuzu hemen indirin veya reflektif ön cam stickerı sipariş edin.</p>
+            <div class="step-card-footer">
+              <button class="btn btn-primary btn-sm btn-full" id="stepBtnBuyQr">
+                <span>QR Satın Al / İndir</span>
+                <span class="arrow">⚡</span>
+              </button>
+            </div>
           </div>
 
-          <div class="step-card">
+          <!-- 3. Adım: Güvenli Park -->
+          <div class="step-card" id="stepCardSafePark">
             <div class="step-icon-wrapper">
               <span class="step-number">3</span>
               <svg viewBox="0 0 24 24" class="step-svg" fill="none" stroke="#000" stroke-width="2.2"
@@ -136,15 +151,21 @@
               </svg>
             </div>
             <h3 class="step-name" data-i18n="steps.step3Title">Güvenli Park</h3>
-            <p class="step-desc" data-i18n="steps.step3Desc">Araçınızı gönül rahatlığıyla park edin.</p>
+            <p class="step-desc" data-i18n="steps.step3Desc">Aracınızı huzurla park edin. Acil durumda numaranız gizli kalarak size ulaşılsın.</p>
+            <div class="step-card-footer">
+              <button class="btn btn-secondary btn-sm btn-full" id="stepBtnSafePark">
+                <span>Güvenli Parkı Dene</span>
+                <span class="arrow">🛡️</span>
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="steps-cta">
-          <a href="#fiyatlandirma" class="btn btn-primary btn-large">
+          <button class="btn btn-primary btn-large" id="mainCtaRegisterBtn">
             <span data-i18n="steps.ctaBtn">Hemen Başla — Ücretsiz</span>
             <span class="arrow">→</span>
-          </a>
+          </button>
         </div>
       </div>
     </section>
@@ -359,6 +380,265 @@
         </div>
         <button type="submit" class="btn btn-primary btn-full" data-i18n="auth.submitRegister">Kayıt Ol</button>
       </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: QR SATIN AL & OLUŞTUR ==================== -->
+  <div id="buyQrModal" class="modal-backdrop">
+    <div class="modal-dialog modal-dialog-lg">
+      <button class="modal-close" id="buyQrModalCloseBtn" aria-label="Kapat">&times;</button>
+      <div class="modal-heading-wrap">
+        <h2 class="modal-heading-title">QR Vizite Kartı Satın Al & Oluştur</h2>
+        <p class="modal-heading-desc">
+          Plakanıza özel şifreli QR kod üretin. İster anında indirin, ister adresinize reflektif sticker sipariş edin.
+        </p>
+      </div>
+
+      <div class="buy-qr-grid">
+        <!-- Sol: Form ve Seçenekler -->
+        <form id="buyQrForm" class="buy-qr-form">
+          <div class="form-group">
+            <label for="qrPlateInput">Araç Plakası</label>
+            <input type="text" id="qrPlateInput" class="input-plate-uppercase" placeholder="Örn: 34 VZT 66" value="34 VZT 66" required maxlength="11">
+          </div>
+
+          <div class="form-group">
+            <label for="qrVehicleType">Araç Tipi</label>
+            <select id="qrVehicleType" class="form-select">
+              <option value="car">Otomobil / SUV</option>
+              <option value="moto">Motosiklet / Scooter</option>
+              <option value="truck">Ticari / Kamyonet</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Ürün Türü Seçin</label>
+            <div class="product-options-grid">
+              <label class="product-option-card active" data-price="0">
+                <input type="radio" name="productType" value="digital" checked>
+                <div class="product-option-header">
+                  <span class="product-option-title">Dijital QR Kod</span>
+                  <span class="product-option-price">ÜCRETSİZ</span>
+                </div>
+                <p class="product-option-desc">Yüksek çözünürlüklü dijital baskı formatında anında indirin.</p>
+              </label>
+
+              <label class="product-option-card" data-price="79">
+                <input type="radio" name="productType" value="sticker">
+                <div class="product-option-header">
+                  <span class="product-option-title">Reflektif Cam Kartı</span>
+                  <span class="product-option-price">₺79</span>
+                </div>
+                <p class="product-option-desc">Güneşten solmayan, gece parlayan kaliteli ön cam stickerı.</p>
+              </label>
+            </div>
+          </div>
+
+          <!-- Fiziksel Sipariş Alanları (Varsayılan Gizli) -->
+          <div id="shippingFields" class="shipping-fields-box" style="display: none;">
+            <div class="form-group">
+              <label for="shippingName">Alıcı Adı Soyadı</label>
+              <input type="text" id="shippingName" placeholder="Ad Soyad">
+            </div>
+            <div class="form-group">
+              <label for="shippingPhone">İletişim Telefonu</label>
+              <input type="tel" id="shippingPhone" placeholder="05XX XXX XX XX">
+            </div>
+            <div class="form-group">
+              <label for="shippingAddress">Teslimat Adresi</label>
+              <textarea id="shippingAddress" rows="2" placeholder="Adresiniz, İlçe / İl"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>İletişim & Gizlilik Tercihleri</label>
+            <div class="checkbox-group">
+              <label class="custom-checkbox">
+                <input type="checkbox" id="maskPhoneCheck" checked>
+                <span>Telefon numaram arayan kişiye asla görünmesin (0850 Maskeleme)</span>
+              </label>
+              <label class="custom-checkbox">
+                <input type="checkbox" id="allowWhatsappCheck" checked>
+                <span>Anonim WhatsApp bildirimlerine izin ver</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="buy-qr-actions">
+            <button type="button" class="btn btn-outline" id="btnDownloadQrDirect">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Dijital İndir (PNG)</span>
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitBuyQr">
+              <span id="buyQrSubmitText">Ücretsiz QR Oluştur</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Sağ: Canlı Önizleme Mockup'ı -->
+        <div class="buy-qr-preview-col">
+          <div class="preview-badge-label">Canlı Çıkartma Önizlemesi</div>
+          <div class="sticker-preview-card" id="interactiveSticker">
+            <div class="sticker-header">
+              <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+                <path d="M7 26C11 18 25 18 29 26" stroke="#F5A623" stroke-width="4" stroke-linecap="round" />
+                <path d="M12 18C15 13 21 13 24 18" stroke="#F5A623" stroke-width="3" stroke-linecap="round" />
+                <circle cx="9" cy="27" r="3" fill="#F5A623" />
+                <circle cx="27" cy="27" r="3" fill="#F5A623" />
+              </svg>
+              <span>66 VİZİTE</span>
+            </div>
+
+            <div class="sticker-plate-box" id="previewPlateText">34 VZT 66</div>
+
+            <div class="sticker-qr-wrapper">
+              <canvas id="liveQrCanvas" width="140" height="140"></canvas>
+            </div>
+
+            <p class="sticker-footer-note">
+              Araç Sahibine Anonim Ulaşmak İçin Kameranızla Okutunuz
+            </p>
+          </div>
+          <p class="preview-info-text">
+            ✓ Numarasız iletişim &nbsp;•&nbsp; ✓ Anlık SMS bildirimi &nbsp;•&nbsp; ✓ Güvenli Park Koruması
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: GÜVENLİ PARK SİSTEMİ SİMÜLATÖRÜ ==================== -->
+  <div id="safeParkModal" class="modal-backdrop">
+    <div class="modal-dialog modal-dialog-lg">
+      <button class="modal-close" id="safeParkModalCloseBtn" aria-label="Kapat">&times;</button>
+      <div class="modal-heading-wrap">
+        <h2 class="modal-heading-title">🛡️ Güvenli Park Sistemi</h2>
+        <p class="modal-heading-desc">
+          Aracınızı park ettiğinizde Güvenli Park Modu'nu aktif edebilir, QR kodunuzu tarayan kişilerin göreceği interaktif bildirim ekranını canlı olarak deneyimleyebilirsiniz.
+        </p>
+      </div>
+
+      <div class="safepark-tabs">
+        <button class="safepark-tab-btn active" id="tabParkDriver">🚗 Sürücü Park Modu</button>
+        <button class="safepark-tab-btn" id="tabParkScanner">📱 QR Tarama Ekranı (Dış Görünüm)</button>
+      </div>
+
+      <!-- Sekme 1: Sürücü Park Modu -->
+      <div class="safepark-pane active" id="paneParkDriver">
+        <div class="driver-mode-card">
+          <div class="driver-status-row">
+            <div>
+              <span class="driver-status-label">Aktif Araç</span>
+              <h3 class="driver-plate-title" id="driverPlateDisplay">34 VZT 66</h3>
+            </div>
+            <div class="park-switch-box">
+              <span class="park-switch-label" id="parkStatusLabel">Güvenli Park: <strong>AKTİF</strong></span>
+              <label class="switch-toggle">
+                <input type="checkbox" id="driverParkToggle" checked>
+                <span class="slider-round"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="park-timer-banner">
+            <div class="timer-dot"></div>
+            <span>Park Süresi: <strong id="parkTimerText">00:18:42</strong></span>
+            <span class="timer-location">📍 Park Konumu Kayıtlı</span>
+          </div>
+
+          <form id="driverNoteForm" class="driver-note-form">
+            <div class="form-group">
+              <label for="driverQuickNote">Özel Park Notu (QR'ı okutanlara gösterilir)</label>
+              <input type="text" id="driverQuickNote" placeholder="Örn: 15 dakika marketteyim, çıkış engeli olursa lütfen haber veriniz." value="15 dakika marketteyim, çıkış engeli olursa lütfen haber veriniz.">
+            </div>
+
+            <div class="quick-preset-chips">
+              <button type="button" class="preset-chip" data-note="15 dakika marketteyim, acilse arayınız.">⏱️ 15 dk Marketteyim</button>
+              <button type="button" class="preset-chip" data-note="Yol dar, gerekirse aracı hemen çekerim.">🚗 Yol Dar, Çekerim</button>
+              <button type="button" class="preset-chip" data-note="Kargo / Paket teslimatındayım, 5 dk.">📦 Kargo Teslimatı (5 dk)</button>
+              <button type="button" class="preset-chip" data-note="Dükkan önü geçici park.">🏪 Dükkan Önü</button>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+              Park Notunu Kaydet & Güncelle
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sekme 2: QR Tarayanın Ekranı (Simülasyon) -->
+      <div class="safepark-pane" id="paneParkScanner">
+        <div class="scanner-sim-wrapper">
+          <div class="scanner-phone-mockup">
+            <div class="phone-screen-header">
+              <span class="phone-badge">66 VİZİTE • GÜVENLİ İLETİŞİM</span>
+              <h3 class="phone-plate" id="simPlateDisplay">34 VZT 66</h3>
+              <p class="phone-sub">Telefon numaranız paylaşılmadan araç sahibine anında iletilir.</p>
+            </div>
+
+            <div class="phone-driver-note-bubble" id="simNoteBubble">
+              <span class="bubble-title">📢 Araç Sahibinin Park Notu:</span>
+              <p class="bubble-text" id="simNoteText">"15 dakika marketteyim, çıkış engeli olursa lütfen haber veriniz."</p>
+            </div>
+
+            <div class="phone-actions-title">Hızlı Bildirim Gönderin</div>
+            <div class="phone-action-buttons">
+              <button class="sim-action-btn btn-car-blocked" data-type="blocked">
+                <span class="sim-btn-icon">🚗</span>
+                <div class="sim-btn-texts">
+                  <strong>Aracınız Çıkışımı Engelliyor</strong>
+                  <span>Araç sahibine acil bildirim yolla</span>
+                </div>
+              </button>
+
+              <button class="sim-action-btn btn-lights-on" data-type="lights">
+                <span class="sim-btn-icon">💡</span>
+                <div class="sim-btn-texts">
+                  <strong>Farlarınız / Dörtlüler Açık</strong>
+                  <span>Akü bitmesin uyarısı ilet</span>
+                </div>
+              </button>
+
+              <button class="sim-action-btn btn-accident" data-type="accident">
+                <span class="sim-btn-icon">⚠️</span>
+                <div class="sim-btn-texts">
+                  <strong>Hasar / Temas Bildir</strong>
+                  <span>Küçük temas veya çizilme durumu</span>
+                </div>
+              </button>
+
+              <button class="sim-action-btn btn-tow" data-type="tow">
+                <span class="sim-btn-icon">🚨</span>
+                <div class="sim-btn-texts">
+                  <strong>Çekici / Ceza Uyarısı</strong>
+                  <span>Bölgede çekici veya zabıta var</span>
+                </div>
+              </button>
+
+              <button class="sim-action-btn btn-call" data-type="call">
+                <span class="sim-btn-icon">📞</span>
+                <div class="sim-btn-texts">
+                  <strong>Anonim Güvenli Arama Başlat</strong>
+                  <span>Numaranız görünmeden doğrudan konuşun</span>
+                </div>
+              </button>
+            </div>
+
+            <!-- Bildirim Gönderildi Bildirimi -->
+            <div class="sim-success-alert" id="simSuccessAlert" style="display: none;">
+              <span class="alert-icon">✓</span>
+              <div>
+                <strong>Bildirim Başarıyla İletildi!</strong>
+                <p id="simSuccessDetail">Araç sahibinin telefonuna güvenli bildirim gönderildi.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
