@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ----------------------------------------------------
-  // 2. GİRİŞ VE KAYIT MODALI (1. ADIM: KAYIT OLUN)
+  // 2. GİRİŞ VE KAYIT MODALI & PANEL ERİŞİM KONTROLÜ
   // ----------------------------------------------------
   const authModal = document.getElementById('authModal');
   const loginTrigger = document.getElementById('loginModalTrigger');
@@ -35,6 +35,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const stepBtnRegister = document.getElementById('stepBtnRegister');
   const mainCtaRegisterBtn = document.getElementById('mainCtaRegisterBtn');
+
+  // Navbar Elemanları
+  const navDashboardLink = document.getElementById('navDashboardLink');
+  const navUserBadge = document.getElementById('navUserBadge');
+  const navUserName = document.getElementById('navUserName');
+  const navLogoutBtn = document.getElementById('navLogoutBtn');
+  const navGetStartedBtn = document.getElementById('navGetStartedBtn');
+
+  // Panel Linkini ve Kullanıcı Durumunu Kontrol Et
+  async function checkUserAuthStatus() {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      const data = await res.json();
+
+      if (res.ok && data.success && data.user) {
+        // Oturum AÇIK: Panel linkini ve kullanıcı rozetini göster
+        if (navDashboardLink) navDashboardLink.style.display = 'inline-flex';
+        if (navUserBadge) navUserBadge.style.display = 'inline-flex';
+        if (navUserName) navUserName.textContent = data.user.fullName || 'Sürücü';
+        if (loginTrigger) loginTrigger.style.display = 'none';
+        if (navGetStartedBtn) navGetStartedBtn.style.display = 'none';
+
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        return;
+      }
+    } catch (e) {}
+
+    // Oturum KAPALI: Panel linkini kesinlikle gizle
+    if (navDashboardLink) navDashboardLink.style.display = 'none';
+    if (navUserBadge) navUserBadge.style.display = 'none';
+    if (loginTrigger) loginTrigger.style.display = 'inline-flex';
+    if (navGetStartedBtn) navGetStartedBtn.style.display = 'inline-flex';
+    localStorage.removeItem('currentUser');
+
+    // Eğer yetkisiz panel erişimiyle index'e yönlendirildiyse
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auth') === 'required') {
+      openAuthModal('login');
+      setTimeout(() => {
+        toast.warning('Yönetim paneline erişebilmek için lütfen önce giriş yapınız.', 'Oturum Gerekli');
+      }, 350);
+      history.replaceState({}, document.title, window.location.pathname);
+    } else if (urlParams.get('auth') === 'expired') {
+      openAuthModal('login');
+      setTimeout(() => {
+        toast.warning('Oturum süreniz doldu, lütfen tekrar giriş yapınız.', 'Oturum Yenile');
+      }, 350);
+      history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  checkUserAuthStatus();
+
+  if (navLogoutBtn) {
+    navLogoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      } catch (e) {}
+      localStorage.removeItem('currentUser');
+      toast.info('Başarıyla çıkış yapıldı.');
+      checkUserAuthStatus();
+    });
+  }
 
   function openAuthModal(mode = 'login') {
     if (!authModal) return;
@@ -95,30 +158,37 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
+      const emailInput = document.getElementById('loginEmail');
+      const passInput = document.getElementById('loginPassword');
+      const email = emailInput.value.trim();
+      const password = passInput.value;
+
+      if (!email || !password) {
+        toast.warning('Lütfen e-posta ve şifrenizi giriniz.');
+        return;
+      }
 
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ email, password })
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          window.location.href = 'dashboard.html';
+          if (data.user) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+          }
+          toast.success(data.message || 'Giriş başarılı! Yönlendiriliyorsunuz...', 'Giriş Yapıldı');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 900);
           return;
         }
-        alert(data.message || 'Giriş yapılamadı.');
+        toast.error(data.message || 'Giriş yapılamadı.');
       } catch (err) {
-        // Fallback demo modunda panele geçiş sağla
-        localStorage.setItem('currentUser', JSON.stringify({
-          fullName: email.split('@')[0].toUpperCase() || 'Sürücü',
-          email: email,
-          planTier: 'pro'
-        }));
-        window.location.href = 'dashboard.html';
+        toast.error('Sunucuya bağlanılamadı. Lütfen sunucunun açık olduğundan emin olun.');
       }
     });
   }
@@ -131,27 +201,37 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
 
+      if (!fullName || !email || !password) {
+        toast.warning('Lütfen tüm zorunlu alanları doldurunuz.');
+        return;
+      }
+
+      if (password.length < 6) {
+        toast.warning('Şifreniz en az 6 karakter olmalıdır.');
+        return;
+      }
+
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ fullName, email, password, planTier: 'pro' })
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          alert('Tebrikler! Hesabınız başarıyla oluşturuldu. Şimdi panelinize yönlendiriliyorsunuz.');
-          window.location.href = 'dashboard.html';
+          if (data.user) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+          }
+          toast.success('Tebrikler! Hesabınız başarıyla oluşturuldu. Panelinize yönlendiriliyorsunuz.', 'Kayıt Başarılı');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1100);
           return;
         }
-        alert(data.message || 'Kayıt işlemi başarısız.');
+        toast.error(data.message || 'Kayıt işlemi başarısız.');
       } catch (err) {
-        localStorage.setItem('currentUser', JSON.stringify({
-          fullName: fullName || 'Sürücü',
-          email: email,
-          planTier: 'pro'
-        }));
-        window.location.href = 'dashboard.html';
+        toast.error('Sunucu bağlantısı sağlanamadı.');
       }
     });
   }
@@ -289,19 +369,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (buyQrForm) {
     buyQrForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const plate = qrPlateInput.value.trim();
+      const plate = (qrPlateInput?.value || '').trim().toUpperCase();
       const selectedType = document.querySelector('input[name="productType"]:checked')?.value;
+
+      // Türkiye Plaka Doğrulaması (Regex)
+      const trPlateRegex = /^(0[1-9]|[1-7][0-9]|8[01])\s?[A-ZÇĞİÖŞÜ]{1,3}\s?[0-9]{2,4}$/i;
+      if (!plate || !trPlateRegex.test(plate)) {
+        toast.warning('Lütfen geçerli bir Türkiye plakası giriniz (Örn: 34 VZT 66 veya 06 ANK 1923).', 'Geçersiz Plaka');
+        qrPlateInput?.focus();
+        return;
+      }
 
       if (selectedType === 'sticker') {
         const name = document.getElementById('shippingName')?.value.trim();
         const address = document.getElementById('shippingAddress')?.value.trim();
         if (!name || !address) {
-          alert('Lütfen teslimat için Ad Soyad ve Adres alanlarını doldurunuz.');
+          toast.warning('Lütfen teslimat için Ad Soyad ve Adres alanlarını doldurunuz.');
           return;
         }
-        alert(`Harika! ${plate} plakalı reflektif ön cam stickerınız için siparişiniz alındı.\nKargo takip numaranız SMS ile iletilecektir.`);
+        toast.success(`Harika! ${plate} plakalı reflektif ön cam stickerınız için siparişiniz alındı.\nKargo takip numaranız SMS ile iletilecektir.`, 'Sipariş Alındı');
       } else {
-        alert(`Tebrikler! ${plate} plakalı dijital QR kodunuz hazırlandı.`);
+        toast.success(`Tebrikler! ${plate} plakalı dijital QR kodunuz hazırlandı ve indiriliyor.`, 'QR Vizite Hazır');
         btnDownloadQrDirect?.click();
       }
 
@@ -371,8 +459,10 @@ document.addEventListener('DOMContentLoaded', () => {
     driverParkToggle.addEventListener('change', () => {
       if (driverParkToggle.checked) {
         parkStatusLabel.innerHTML = 'Güvenli Park: <strong style="color: #2ed573;">AKTİF</strong>';
+        toast.success('Güvenli park modu aktif edildi.');
       } else {
         parkStatusLabel.innerHTML = 'Güvenli Park: <strong style="color: #ff4757;">PASİF</strong>';
+        toast.info('Güvenli park modu pasife alındı.');
       }
     });
   }
@@ -389,50 +479,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Not Güncelleme Formu
   if (driverNoteForm) {
-    driverNoteForm.addEventListener('submit', (e) => {
+    driverNoteForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const val = driverQuickNote.value.trim() || 'Park halindedir.';
       if (simNoteText) {
         simNoteText.textContent = `"${val}"`;
       }
-      alert('Park notunuz kaydedildi ve QR kodunuzu tarayan herkes için anında güncellendi.');
+      try {
+        await fetch('/api/vehicles/34%20VZT%2066/note', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ parkingNote: val })
+        });
+      } catch (err) {}
+      toast.success('Park notunuz kaydedildi ve QR kodunuzu tarayan herkes için güncellendi.', 'Not Güncellendi');
     });
   }
 
-  // Simülatör Hızlı Bildirim Aksiyonları
+  // Simülatör Hızlı Bildirim Aksiyonları (Gerçek API Loglama)
   simActionButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const type = btn.getAttribute('data-type');
-      let msg = '';
+      let defaultMsg = 'Bildirim araç sahibine güvenle iletildi.';
 
-      switch (type) {
-        case 'blocked':
-          msg = '🚗 "Aracınız Çıkışımı Engelliyor" uyarısı araç sahibine öncelikli bildirim ve SMS olarak iletildi.';
-          break;
-        case 'lights':
-          msg = '💡 "Farlarınız / Dörtlüler Açık" uyarısı araç sahibine iletildi. Akü koruma alarmı devrede.';
-          break;
-        case 'accident':
-          msg = '⚠️ Hasar / Temas bildirimi ve konum bilgisi araç sahibine güvenli şekilde aktarıldı.';
-          break;
-        case 'tow':
-          msg = '🚨 "Bölgede Çekici / Ceza Uyarısı" acil uyarısı araç sahibine yüksek sesli bildirimle gönderildi.';
-          break;
-        case 'call':
-          msg = '📞 0850 Anonim Köprü Arama başlatıldı. Telefon numaranız karşı tarafa kesinlikle iletilmez.';
-          break;
-        default:
-          msg = 'Bildirim araç sahibine güvenle iletildi.';
-      }
+      try {
+        const res = await fetch('/api/scan/34%20VZT%2066/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ actionType: type })
+        });
+        const data = await res.json();
+        const msg = data.message || defaultMsg;
 
-      if (simSuccessAlert && simSuccessDetail) {
-        simSuccessDetail.textContent = msg;
-        simSuccessAlert.style.display = 'flex';
-        simSuccessAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (simSuccessAlert && simSuccessDetail) {
+          simSuccessDetail.textContent = msg;
+          simSuccessAlert.style.display = 'flex';
+          simSuccessAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-        setTimeout(() => {
-          simSuccessAlert.style.display = 'none';
-        }, 5000);
+          setTimeout(() => {
+            simSuccessAlert.style.display = 'none';
+          }, 5000);
+        }
+
+        toast.info(msg, 'Bildirim İletildi');
+      } catch (err) {
+        toast.info(defaultMsg, 'Bildirim İletildi');
       }
     });
   });

@@ -1,0 +1,22 @@
+# Bağımlılıklar (Dependencies)
+node_modules/
+
+# Ortam Değişkenleri (Environment variables)
+.env
+.env.local
+.env.*.local
+
+# Günlük Dosyaları (Logs)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# SQLite Geçici Kilit Dosyaları (Lock and journal files)
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+
+# İşletim Sistemi Geçici Dosyaları
+.DS_Store
+Thumbs.db

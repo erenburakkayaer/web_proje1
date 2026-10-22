@@ -83,7 +83,7 @@
       </div>
 
       <!-- Temel Kayıt Formu -->
-      <form id="pageRegisterForm" class="auth-form-card" action="/api/auth/register" method="POST">
+      <form id="pageRegisterForm" class="auth-form-card" novalidate>
         <div class="form-group">
           <label for="name">Ad Soyad</label>
           <input type="text" id="name" name="fullName" placeholder="Adınız Soyadınız" required>
@@ -99,7 +99,7 @@
           <input type="password" id="password" name="password" placeholder="En az 6 karakter" required>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-full">Kayıt Ol</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-full">Kayıt Ol ve Panele Geç</button>
       </form>
 
       <div style="text-align: center; margin-top: 20px;">
@@ -108,34 +108,75 @@
     </div>
   </div>
 
+  <script src="toast.js"></script>
   <script>
-    document.getElementById('pageRegisterForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const fullName = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+    const regForm = document.getElementById('pageRegisterForm');
+    const submitBtn = document.getElementById('submitBtn');
 
-      if (!fullName || !email || !password) {
-        alert('Lütfen tüm alanları doldurunuz.');
+    regForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+      const passInput = document.getElementById('password');
+
+      const fullName = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passInput.value;
+
+      // Temizle
+      [nameInput, emailInput, passInput].forEach(inp => inp.classList.remove('input-invalid'));
+
+      if (!fullName) {
+        nameInput.classList.add('input-invalid');
+        nameInput.focus();
+        toast.warning('Lütfen Ad Soyad alanını doldurunuz.');
         return;
       }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        emailInput.classList.add('input-invalid');
+        emailInput.focus();
+        toast.warning('Lütfen geçerli bir e-posta adresi giriniz.');
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        passInput.classList.add('input-invalid');
+        passInput.focus();
+        toast.warning('Şifreniz en az 6 karakter olmalıdır.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Kayıt Yapılıyor...';
 
       try {
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ fullName, email, password, planTier: 'pro' })
         });
         const data = await res.json();
+
         if (res.ok && data.success) {
-          alert('Tebrikler! Kayıt başarılı. Ana sayfaya yönlendiriliyorsunuz.');
-          window.location.href = 'index.html';
+          if (data.user) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+          }
+          toast.success('Hesabınız başarıyla oluşturuldu! Panelinize yönlendiriliyorsunuz.', 'Hoş Geldiniz');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1200);
         } else {
-          alert('Kayıt başarısız: ' + (data.message || 'Bilinmeyen hata'));
+          toast.error(data.message || 'Kayıt işlemi başarısız.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Kayıt Ol ve Panele Geç';
         }
       } catch (err) {
-        alert('Kayıt simülasyonu: Bilgileriniz alındı (' + fullName + '). Sunucu aktif olduğunda veritabanına işlenecektir.');
-        window.location.href = 'index.html';
+        toast.error('Sunucu ile iletişim kurulamadı. Lütfen sunucunun açık olduğundan emin olun.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kayıt Ol ve Panele Geç';
       }
     });
   </script>

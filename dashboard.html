@@ -476,7 +476,7 @@
           </div>
 
           <!-- Semantik CSS Çubuk Grafiği (Bar Chart) -->
-          <div class="chart-bars-container">
+          <div class="chart-bars-container" id="weeklyBarsContainer">
             <div class="chart-bar-col">
               <span class="chart-bar-val">12</span>
               <div class="chart-bar h-45"></div>
@@ -675,34 +675,7 @@
         <div class="sticker-plate-box" id="stickerPlateText">34 VZT 66</div>
 
         <div class="sticker-qr-wrapper">
-          <svg class="sticker-qr-svg" viewBox="0 0 100 100">
-            <rect width="100" height="100" fill="#ffffff" />
-            <rect x="10" y="10" width="28" height="28" fill="#111" />
-            <rect x="16" y="16" width="16" height="16" fill="#fff" />
-            <rect x="20" y="20" width="8" height="8" fill="#111" />
-            <rect x="62" y="10" width="28" height="28" fill="#111" />
-            <rect x="68" y="16" width="16" height="16" fill="#fff" />
-            <rect x="72" y="20" width="8" height="8" fill="#111" />
-            <rect x="10" y="62" width="28" height="28" fill="#111" />
-            <rect x="16" y="68" width="16" height="16" fill="#fff" />
-            <rect x="20" y="72" width="8" height="8" fill="#111" />
-            <rect x="44" y="12" width="6" height="6" fill="#111" />
-            <rect x="52" y="20" width="6" height="14" fill="#111" />
-            <rect x="44" y="28" width="6" height="6" fill="#111" />
-            <rect x="12" y="44" width="8" height="8" fill="#111" />
-            <rect x="26" y="44" width="6" height="6" fill="#111" />
-            <rect x="36" y="44" width="8" height="8" fill="#111" />
-            <rect x="48" y="48" width="6" height="6" fill="#f5a623" />
-            <rect x="58" y="44" width="8" height="8" fill="#111" />
-            <rect x="72" y="44" width="8" height="8" fill="#111" />
-            <rect x="84" y="44" width="6" height="6" fill="#111" />
-            <rect x="44" y="60" width="6" height="6" fill="#111" />
-            <rect x="54" y="68" width="12" height="6" fill="#111" />
-            <rect x="74" y="64" width="6" height="12" fill="#111" />
-            <rect x="84" y="74" width="6" height="6" fill="#111" />
-            <rect x="44" y="80" width="6" height="10" fill="#111" />
-            <rect x="64" y="84" width="16" height="6" fill="#111" />
-          </svg>
+          <img id="stickerQrImg" class="sticker-qr-img" src="/api/qr?text=34+VZT+66" alt="QR Kod" style="width: 170px; height: 170px; object-fit: contain; border-radius: 8px; background: #fff; padding: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
         </div>
 
         <p class="sticker-footer-note">
@@ -732,7 +705,12 @@
   </div>
 
   <!-- ==================== JAVASCRIPT ETKİLEŞİM MANTIĞI ==================== -->
+  <script src="toast.js"></script>
   <script>
+    // Global Durum
+    let currentPlateForQr = '34 VZT 66';
+    let currentUserData = null;
+
     document.addEventListener('DOMContentLoaded', () => {
       // 1. Tema Değiştirici (Dark / Light Mode)
       const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -765,28 +743,13 @@
         });
       }
 
-      // 3. Oturum Açmış Kullanıcı Bilgilerini Çekme (Varsa localStorage)
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        try {
-          const userObj = JSON.parse(storedUser);
-          if (userObj.fullName) {
-            document.getElementById('userDisplayName').textContent = userObj.fullName;
-            const initials = userObj.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userAvatarText').textContent = initials;
-          }
-        } catch (e) {}
-      }
+      // 3. Kullanıcı Oturumunu Doğrula (JWT HTTP-Only Çerez & /api/auth/me)
+      initUserSession();
 
       // 4. Çıkış Butonu
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-          if (confirm('Oturumu kapatmak ve ana sayfaya dönmek istiyor musunuz?')) {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
-          }
-        });
+        logoutBtn.addEventListener('click', handleLogout);
       }
 
       // 5. Arama Çubuğu Canlı Filtreleme
@@ -794,8 +757,6 @@
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
           const query = e.target.value.toLowerCase().trim();
-          
-          // Araçları filtrele
           document.querySelectorAll('.vehicle-card').forEach(card => {
             const plate = (card.getAttribute('data-plate') || '').toLowerCase();
             const brand = (card.getAttribute('data-brand') || '').toLowerCase();
@@ -813,8 +774,12 @@
       if (openAddBtn) {
         openAddBtn.addEventListener('click', openAddVehicleModal);
       }
+      const addNewVehicleTriggerBtn = document.getElementById('addNewVehicleTriggerBtn');
+      if (addNewVehicleTriggerBtn) {
+        addNewVehicleTriggerBtn.addEventListener('click', openAddVehicleModal);
+      }
 
-      // 7. Navigasyon Sekmeleri Aktiflik Durumu
+      // 7. Navigasyon Sekmeleri
       const navLinks = document.querySelectorAll('.dash-nav-link');
       navLinks.forEach(link => {
         link.addEventListener('click', function() {
@@ -827,12 +792,234 @@
           }
         });
       });
+
+      // 8. Araçları ve Analitikleri Yükle
+      loadVehicles();
+      loadAnalytics();
     });
 
-    // ==================== FONKSİYONLAR ====================
+    // ==========================================
+    // KULLANICI OTURUM YÖNETİMİ (JWT)
+    // ==========================================
+    async function initUserSession() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && data.success && data.user) {
+          currentUserData = data.user;
+          renderUserProfile(currentUserData);
+          return;
+        }
+      } catch (err) {
+        console.warn('Oturum API sorgusu hatası:', err);
+      }
+
+      // Oturum yoksa veya geçersizse panele erişim engellenir
+      localStorage.removeItem('currentUser');
+      window.location.href = 'index.html?auth=required';
+    }
+
+    function renderUserProfile(user) {
+      if (!user) return;
+      const name = user.fullName || user.full_name || 'Değerli Sürücü';
+      const nameEl = document.getElementById('userDisplayName');
+      if (nameEl) nameEl.textContent = name;
+
+      const avatarEl = document.getElementById('userAvatarText');
+      if (avatarEl) {
+        const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        avatarEl.textContent = initials || '66';
+      }
+    }
+
+    async function handleLogout() {
+      if (!confirm('Oturumu kapatmak ve ana sayfaya dönmek istiyor musunuz?')) return;
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      } catch (e) {}
+      localStorage.removeItem('currentUser');
+      toast.info('Güvenli çıkış yapıldı. Ana sayfaya yönlendiriliyorsunuz.', 'Çıkış Yapıldı');
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 700);
+    }
+
+    // ==========================================
+    // ARAÇ YÖNETİMİ & FULL CRUD (SQLite)
+    // ==========================================
+    async function loadVehicles() {
+      const grid = document.getElementById('vehiclesGridContainer');
+      if (!grid) return;
+
+      try {
+        const res = await fetch('/api/vehicles', { credentials: 'include' });
+        const data = await res.json();
+        const vehicles = data.vehicles || [];
+
+        renderVehiclesGrid(vehicles);
+        updateCounters(vehicles.length);
+      } catch (err) {
+        console.error('Araçlar yüklenemedi:', err);
+        toast.error('Araçlar sunucudan yüklenirken bir sorun oluştu.');
+      }
+    }
+
+    function renderVehiclesGrid(vehicles) {
+      const grid = document.getElementById('vehiclesGridContainer');
+      grid.innerHTML = '';
+
+      // Boş Durum (Empty State)
+      if (vehicles.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state-card" id="emptyStateCard">
+            <div class="empty-state-icon-wrap">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+                <path d="M15 17a2 2 0 1 0 4 0 2 2 0 1 0-4 0Z"></path>
+                <path d="M5 17H3v-4l2-5h10l2 5v4h-2"></path>
+                <path d="M9 17h6"></path>
+              </svg>
+            </div>
+            <h3 class="empty-state-title">Henüz Kayıtlı Aracınız Bulunmuyor</h3>
+            <p class="empty-state-desc">İlk aracınızı ekleyerek anonim QR vizite kodunuzu saniyeler içinde oluşturabilir ve ön cam etiketinizi anında yazdırabilirsiniz.</p>
+            <button class="btn btn-primary" onclick="openAddVehicleModal()">+ İlk Aracınızı Ekleyin</button>
+          </div>
+        `;
+        return;
+      }
+
+      // Araç Kartlarını Render Et
+      vehicles.forEach(v => {
+        const isActive = v.is_active === 1;
+        const plate = v.plate_number;
+        const brand = v.brand_model;
+        const color = v.color || 'Bireysel Kullanım';
+        const scanCount = v.scan_count || 0;
+
+        const card = document.createElement('article');
+        card.className = 'vehicle-card';
+        card.setAttribute('data-plate', plate);
+        card.setAttribute('data-brand', brand);
+        card.setAttribute('data-id', v.id);
+
+        card.innerHTML = `
+          <div class="vehicle-card-top">
+            <div>
+              <div class="turk-plaka">
+                <span class="plaka-tr-band">TR</span>
+                <span class="plaka-text">${plate}</span>
+              </div>
+              <div class="vehicle-title-wrap">
+                <h3 class="vehicle-model-name">${brand}</h3>
+                <p class="vehicle-sub-info">${color}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-switch-row">
+            <div class="status-label">
+              <span class="status-dot ${isActive ? '' : 'inactive'}"></span>
+              <span>${isActive ? 'QR İletişimi Aktif' : 'QR Geçici Olarak Kapalı'}</span>
+            </div>
+            <label class="switch-toggle" title="QR'ı Aç / Kapat">
+              <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleVehicleStatus(this, '${plate}')">
+              <span class="slider-round"></span>
+            </label>
+          </div>
+
+          <div class="vehicle-body-flex">
+            <div class="vehicle-mini-qr" onclick="openQrModal('${plate}', '${brand}')" title="Büyük QR Önizlemesi">
+              <img src="/api/qr?text=${encodeURIComponent(plate)}&size=200" alt="QR" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px;" />
+            </div>
+            <div class="vehicle-stats-list">
+              <div class="v-stat-row">
+                <span class="v-stat-title">Taranma Sayısı:</span>
+                <span class="v-stat-num">${scanCount} kez</span>
+              </div>
+              <div class="v-stat-row">
+                <span class="v-stat-title">Durum:</span>
+                <span class="v-stat-num v-stat-status-ready">${isActive ? 'Yayında' : 'Pasif'}</span>
+              </div>
+              <div class="v-stat-row">
+                <span class="v-stat-title">Token:</span>
+                <span class="v-stat-num" style="font-size: 0.78rem; color: var(--accent-yellow);">${v.qr_token || 'VZT-ACTIVE'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="vehicle-card-actions">
+            <button class="btn btn-outline" onclick="openQrModal('${plate}', '${brand}')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>QR İndir / Yazdır</span>
+            </button>
+            <button class="btn-icon-danger" onclick="deleteVehicleConfirm(${v.id}, '${plate}')" title="${plate} Plakalı Aracı Sil">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      // Yeni Araç Ekle Slot Kartı
+      const slotCard = document.createElement('div');
+      slotCard.className = 'add-vehicle-slot-card';
+      slotCard.id = 'slotAddVehicleCard';
+      slotCard.onclick = openAddVehicleModal;
+      slotCard.innerHTML = `
+        <div class="add-vehicle-icon-ring">+</div>
+        <h3 class="add-slot-title">Yeni Araç Tanımla</h3>
+        <p class="add-slot-desc">
+          Mevcut Pro paketinizde ${Math.max(0, 5 - vehicles.length)} adet boş araç kotanız bulunmaktadır.
+        </p>
+        <span class="btn btn-outline btn-xs add-slot-btn">Hemen Ekle</span>
+      `;
+      grid.appendChild(slotCard);
+    }
+
+    function updateCounters(count) {
+      const navVehiclesCount = document.getElementById('navVehiclesCount');
+      if (navVehiclesCount) navVehiclesCount.textContent = count;
+      const kpiVehicleCount = document.getElementById('kpiVehicleCount');
+      if (kpiVehicleCount) kpiVehicleCount.textContent = `${count} / 5`;
+    }
+
+    // Araç Silme İşlemi (Delete)
+    async function deleteVehicleConfirm(id, plate) {
+      if (!confirm(`"${plate}" plakalı aracı ve tüm QR kod kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/vehicles/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          toast.success(`"${plate}" plakalı araç başarıyla silindi.`, 'Araç Silindi');
+          loadVehicles();
+          loadAnalytics();
+        } else {
+          toast.error(data.message || 'Araç silinemedi.');
+        }
+      } catch (err) {
+        toast.error('Sunucu bağlantısı sırasında hata oluştu.');
+      }
+    }
 
     // Araç QR Durumu Aç / Kapat
-    function toggleVehicleStatus(checkbox, plate) {
+    async function toggleVehicleStatus(checkbox, plate) {
       const isChecked = checkbox.checked;
       const statusLabel = checkbox.closest('.status-switch-row').querySelector('.status-label');
       const dot = statusLabel.querySelector('.status-dot');
@@ -845,12 +1032,145 @@
         dot.classList.add('inactive');
         text.textContent = 'QR Geçici Olarak Kapalı';
       }
+
+      try {
+        const res = await fetch(`/api/vehicles/${encodeURIComponent(plate)}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ isActive: isChecked })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          toast.success(`${plate} için QR iletişimi ${isChecked ? 'aktif edildi' : 'geçici olarak kapatıldı'}.`, 'Durum Güncellendi');
+        } else {
+          toast.error(data.message || 'Durum değiştirilemedi.');
+        }
+      } catch (err) {
+        toast.warning('Durum yerel olarak değiştirildi ancak sunucuya ulaşılamadı.');
+      }
     }
 
-    // QR Önizleme Modalı
+    // Yeni Araç Kayıt Formu (TR Plaka Doğrulaması & API)
+    async function handleNewVehicleSubmit(e) {
+      e.preventDefault();
+      const plateInput = document.getElementById('inputPlate');
+      const brandInput = document.getElementById('inputBrand');
+      const colorInput = document.getElementById('inputColor');
+
+      const plate = plateInput.value.trim().toUpperCase();
+      const brand = brandInput.value.trim();
+      const color = colorInput.value.trim();
+
+      plateInput.classList.remove('input-invalid');
+      brandInput.classList.remove('input-invalid');
+
+      if (!plate) {
+        plateInput.classList.add('input-invalid');
+        plateInput.focus();
+        toast.warning('Lütfen araç plakasını giriniz.');
+        return;
+      }
+
+      // Türkiye Plaka Formatı Doğrulaması (Regex)
+      const trPlateRegex = /^(0[1-9]|[1-7][0-9]|8[01])\s?[A-ZÇĞİÖŞÜ]{1,3}\s?[0-9]{2,4}$/i;
+      if (!trPlateRegex.test(plate)) {
+        plateInput.classList.add('input-invalid');
+        plateInput.focus();
+        toast.warning('Geçerli bir Türkiye plakası giriniz (Örn: 34 VZT 66, 06 ANK 1923 veya 35 A 1234).', 'Geçersiz Plaka Formatı');
+        return;
+      }
+
+      if (!brand) {
+        brandInput.classList.add('input-invalid');
+        brandInput.focus();
+        toast.warning('Lütfen araç marka ve modelini giriniz.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/vehicles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            plateNumber: plate,
+            brandModel: brand,
+            color: color || 'Bireysel Araç'
+          })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          toast.success(data.message || `${plate} plakalı araç başarıyla kaydedildi.`, 'Başarılı');
+          closeAddVehicleModal();
+          document.getElementById('addVehicleForm').reset();
+          loadVehicles();
+          loadAnalytics();
+        } else {
+          toast.error(data.message || 'Araç kaydedilemedi.');
+        }
+      } catch (err) {
+        toast.error('Sunucuya bağlanırken hata oluştu.');
+      }
+    }
+
+    // ==========================================
+    // GERÇEK ANALİTİK & GRAFİK (SQLite Scans)
+    // ==========================================
+    async function loadAnalytics() {
+      try {
+        const res = await fetch('/api/analytics', { credentials: 'include' });
+        const data = await res.json();
+        if (!res.ok || !data.success) return;
+
+        const an = data.analytics;
+
+        // KPI'ları Güncelle
+        const kpiScanCount = document.getElementById('kpiScanCount');
+        if (kpiScanCount) kpiScanCount.textContent = an.totalScans || 0;
+
+        const kpiActiveQrCount = document.getElementById('kpiActiveQrCount');
+        if (kpiActiveQrCount) kpiActiveQrCount.textContent = `${an.activeQrs || 0} / ${an.totalVehicles || 0}`;
+
+        // Haftalık Çubuk Grafiğini Dinamik Oluştur
+        const chartWrap = document.getElementById('weeklyBarsContainer');
+        if (chartWrap && an.weeklyChart && an.weeklyChart.length > 0) {
+          chartWrap.innerHTML = '';
+
+          const maxDay = Math.max(...an.weeklyChart.map(d => d.count), 1);
+
+          an.weeklyChart.forEach(item => {
+            const isHighest = item.count === maxDay && item.count > 0;
+            const barHeightPx = Math.max(16, Math.min(140, Math.round((item.count / maxDay) * 120) + 16));
+
+            const col = document.createElement('div');
+            col.className = 'chart-bar-col';
+            col.title = `${item.date || ''} (${item.day}): ${item.count} tarama`;
+            col.innerHTML = `
+              <span class="chart-bar-val ${isHighest ? 'highlight' : ''}">${item.count}</span>
+              <div class="chart-bar ${isHighest ? 'highlight' : ''}" style="height: ${barHeightPx}px;"></div>
+              <span class="chart-bar-day ${isHighest ? 'highlight' : ''}">${item.day}</span>
+            `;
+            chartWrap.appendChild(col);
+          });
+        }
+      } catch (err) {
+        console.warn('Analitik yüklenemedi:', err);
+      }
+    }
+
+    // ==========================================
+    // MODAL İŞLEMLERİ (QR & Yeni Araç)
+    // ==========================================
     function openQrModal(plate, brand) {
+      currentPlateForQr = plate;
       document.getElementById('stickerPlateText').textContent = plate;
       document.getElementById('qrModalTitle').textContent = `${plate} - QR Vizite Kartı`;
+      const qrImg = document.getElementById('stickerQrImg');
+      if (qrImg) {
+        qrImg.src = `/api/qr?text=${encodeURIComponent(plate)}&size=300`;
+      }
       document.getElementById('qrModal').classList.add('open');
     }
 
@@ -858,7 +1178,6 @@
       document.getElementById('qrModal').classList.remove('open');
     }
 
-    // Yeni Araç Modalı
     function openAddVehicleModal() {
       document.getElementById('addVehicleModal').classList.add('open');
       document.getElementById('inputPlate').focus();
@@ -868,110 +1187,19 @@
       document.getElementById('addVehicleModal').classList.remove('open');
     }
 
-    // Yeni Araç Kayıt Formu
-    function handleNewVehicleSubmit(e) {
-      e.preventDefault();
-      const plate = document.getElementById('inputPlate').value.trim().toUpperCase();
-      const brand = document.getElementById('inputBrand').value.trim();
-      const color = document.getElementById('inputColor').value.trim();
-
-      if (!plate || !brand) return;
-
-      // Yeni Kart Oluştur
-      const newCard = document.createElement('article');
-      newCard.className = 'vehicle-card';
-      newCard.setAttribute('data-plate', plate);
-      newCard.setAttribute('data-brand', brand);
-      newCard.innerHTML = `
-        <div class="vehicle-card-top">
-          <div>
-            <div class="turk-plaka">
-              <span class="plaka-tr-band">TR</span>
-              <span class="plaka-text">${plate}</span>
-            </div>
-            <div class="vehicle-title-wrap">
-              <h3 class="vehicle-model-name">${brand}</h3>
-              <p class="vehicle-sub-info">${color}</p>
-            </div>
-          </div>
-        </div>
-        <div class="status-switch-row">
-          <div class="status-label">
-            <span class="status-dot"></span>
-            <span>QR İletişimi Aktif</span>
-          </div>
-          <label class="switch-toggle" title="QR'ı Aç / Kapat">
-            <input type="checkbox" checked onchange="toggleVehicleStatus(this, '${plate}')">
-            <span class="slider-round"></span>
-          </label>
-        </div>
-        <div class="vehicle-body-flex">
-          <div class="vehicle-mini-qr" onclick="openQrModal('${plate}', '${brand}')" title="Büyük QR Önizlemesi">
-            <svg viewBox="0 0 100 100" width="100%" height="100%">
-              <rect width="100" height="100" fill="#ffffff" />
-              <rect x="10" y="10" width="28" height="28" fill="#111" />
-              <rect x="16" y="16" width="16" height="16" fill="#fff" />
-              <rect x="20" y="20" width="8" height="8" fill="#111" />
-              <rect x="62" y="10" width="28" height="28" fill="#111" />
-              <rect x="68" y="16" width="16" height="16" fill="#fff" />
-              <rect x="72" y="20" width="8" height="8" fill="#111" />
-              <rect x="10" y="62" width="28" height="28" fill="#111" />
-              <rect x="16" y="68" width="16" height="16" fill="#fff" />
-              <rect x="20" y="72" width="8" height="8" fill="#111" />
-              <rect x="46" y="16" width="8" height="8" fill="#111" />
-              <rect x="48" y="48" width="8" height="8" fill="#f5a623" />
-              <rect x="64" y="64" width="8" height="8" fill="#111" />
-            </svg>
-          </div>
-          <div class="vehicle-stats-list">
-            <div class="v-stat-row">
-              <span class="v-stat-title">Taranma Sayısı:</span>
-              <span class="v-stat-num">0 kez (Yeni)</span>
-            </div>
-            <div class="v-stat-row">
-              <span class="v-stat-title">Durum:</span>
-              <span class="v-stat-num v-stat-status-ready">Kullanıma Hazır</span>
-            </div>
-            <div class="v-stat-row">
-              <span class="v-stat-title">Son Tarama:</span>
-              <span class="v-stat-num">-</span>
-            </div>
-          </div>
-        </div>
-        <div class="vehicle-card-actions">
-          <button class="btn btn-outline" onclick="openQrModal('${plate}', '${brand}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>QR İndir / Yazdır</span>
-          </button>
-        </div>
-      `;
-
-      const grid = document.getElementById('vehiclesGridContainer');
-      const slotCard = document.getElementById('slotAddVehicleCard');
-      grid.insertBefore(newCard, slotCard);
-
-      // Sayacı Güncelle
-      const currentCount = document.querySelectorAll('.vehicle-card').length;
-      document.getElementById('navVehiclesCount').textContent = currentCount;
-      document.getElementById('kpiVehicleCount').textContent = `${currentCount} / 5`;
-      document.getElementById('kpiActiveQrCount').textContent = `${currentCount} / ${currentCount}`;
-
-      closeAddVehicleModal();
-      document.getElementById('addVehicleForm').reset();
-      alert(`✅ ${plate} plakalı ${brand} aracı başarıyla sisteme eklendi ve QR kodu üretildi!`);
-    }
-
-    // Baskı ve İndirme
     function printSticker() {
       window.print();
     }
 
     function downloadStickerPng() {
-      alert('QR Vizite etiketi yüksek çözünürlüklü olarak hazırlandı. Baskı almak için PDF/Yazdır seçeneğini de kullanabilirsiniz.');
+      const link = document.createElement('a');
+      link.download = `66-vizite-${currentPlateForQr.replace(/\s+/g, '-')}.png`;
+      link.href = `/api/qr?text=${encodeURIComponent(currentPlateForQr)}&size=800`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Yüksek çözünürlüklü QR vizite etiketi indirildi.', 'İndirme Başarılı');
     }
   </script>
 </body>

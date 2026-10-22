@@ -1,202 +1,136 @@
 /**
- * 66 Vizite - Yerel Geliştirme Sunucusu (Node.js)
- * Harici kütüphane gerektirmez (Zero-dependency).
- * Dahili SQLite ve statik dosya sunucusu barındırır.
+ * 66 Vizite - Platform Sunucusu (Modular Express Application)
  */
 
-const http = require('node:http');
-const fs = require('node:fs');
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const path = require('node:path');
-const { initDatabase, registerUser, authenticateUser, getAllUsers } = require('./database/db.js');
 
-// Veritabanını hazırla
+// Veritabanı ve Modüler Rotalar
+const { initDatabase, getAllUsers } = require('./database/db.js');
+const authRoutes = require('./routes/auth.js');
+const vehicleRoutes = require('./routes/vehicles.js');
+const scanRoutes = require('./routes/scan.js');
+const analyticsRoutes = require('./routes/analytics.js');
+const qrRoutes = require('./routes/qr.js');
+const { apiLimiter } = require('./middleware/rateLimit.js');
+
+// Veritabanı tablolarını ve şemayı hazırla
 initDatabase();
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = __dirname;
 
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf'
-};
+// ==========================================
+// ARA YAZILIMLAR (MIDDLEWARE)
+// ==========================================
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+app.use(cookieParser(process.env.COOKIE_SECRET || '66vizite_cookie_secret_salt_2026'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
-function sendJson(res, statusCode, data) {
-  res.writeHead(statusCode, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
-  });
-  res.end(JSON.stringify(data));
-}
+const jwt = require('jsonwebtoken');
+const { COOKIE_NAME } = require('./middleware/auth.js');
+const JWT_SECRET = process.env.JWT_SECRET || '66vizite_ultra_secure_jwt_secret_key_2026_x89f_mycar';
 
-function parseRequestBody(req) {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-    req.on('end', () => {
-      if (!body) {
-        return resolve({});
-      }
-      try {
-        resolve(JSON.parse(body));
-      } catch {
-        // x-www-form-urlencoded parse fallback
-        const params = new URLSearchParams(body);
-        const parsed = {};
-        for (const [key, value] of params.entries()) {
-          parsed[key] = value;
-        }
-        resolve(parsed);
-      }
-    });
-    req.on('error', err => reject(err));
-  });
-}
-
-const server = http.createServer(async (req, res) => {
-  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-  let pathname = parsedUrl.pathname;
-
-  // CORS ön kontrol
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    });
-    res.end();
-    return;
+// ==========================================
+// SAYFA KORUMA: Dashboard Sadece Giriş Yapınca Açılır
+// ==========================================
+app.get('/dashboard.html', (req, res) => {
+  const token = req.cookies && req.cookies[COOKIE_NAME];
+  if (!token) {
+    return res.redirect('/?auth=required');
   }
+  try {
+    jwt.verify(token, JWT_SECRET);
+    return res.sendFile(path.join(PUBLIC_DIR, 'dashboard.html'));
+  } catch (err) {
+    res.clearCookie(COOKIE_NAME);
+    return res.redirect('/?auth=expired');
+  }
+});
 
-  // --- API Endpointleri ---
-  if (pathname === '/api/auth/login' && req.method === 'POST') {
-    try {
-      const data = await parseRequestBody(req);
-      const email = String(data.email || '').trim();
-      const password = String(data.password || '');
+// Statik Dosyalar (HTML, CSS, JS, Medya)
+app.use(express.static(PUBLIC_DIR));
 
-      if (!email || !password) {
-        return sendJson(res, 400, {
-          success: false,
-          message: 'E-posta ve Şifre alanları zorunludur.'
-        });
-      }
+// ==========================================
+// API ROTALARI (MODÜLER)
+// ==========================================
+app.use('/api', apiLimiter);
+app.use('/api/auth', authRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/scan', scanRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/qr', qrRoutes);
 
-      const user = authenticateUser(email, password);
-      return sendJson(res, 200, {
-        success: true,
-        message: 'Giriş başarılı!',
-        user
-      });
-    } catch (err) {
-      return sendJson(res, 401, {
-        success: false,
-        message: err.message || 'Giriş yapılamadı.'
-      });
+// Sistem Sağlık Durumu Uç Noktası
+app.get('/api/status', (req, res) => {
+  res.status(200).json({
+    success: true,
+    platform: '66 Vizite Araç Yönetim Sistemi',
+    status: 'online',
+    version: '2.0.0',
+    timestamp: new Date().toISOString(),
+    nodeVersion: process.version,
+    uptimeSeconds: Math.floor(process.uptime()),
+    features: {
+      jwtAuth: true,
+      httpOnlyCookies: true,
+      rateLimiting: true,
+      sqliteDb: true,
+      dynamicQr: true,
+      realTimeScans: true
     }
-  }
-
-  if (pathname === '/api/auth/register' && req.method === 'POST') {
-    try {
-      const data = await parseRequestBody(req);
-      const fullName = String(data.fullName || '').trim();
-      const email = String(data.email || '').trim();
-      const password = String(data.password || '');
-      const planTier = String(data.planTier || 'pro').trim();
-
-      if (!fullName || !email || !password) {
-        return sendJson(res, 400, {
-          success: false,
-          message: 'Ad Soyad, E-posta ve Şifre alanları zorunludur.'
-        });
-      }
-
-      if (password.length < 6) {
-        return sendJson(res, 400, {
-          success: false,
-          message: 'Şifre en az 6 karakter olmalıdır.'
-        });
-      }
-
-      const user = registerUser(fullName, email, password, planTier);
-      return sendJson(res, 201, {
-        success: true,
-        message: 'Kayıt işlemi başarıyla tamamlandı.',
-        user
-      });
-    } catch (err) {
-      return sendJson(res, 400, {
-        success: false,
-        message: err.message || 'Kayıt başarısız.'
-      });
-    }
-  }
-
-  if (pathname === '/api/users' && req.method === 'GET') {
-    try {
-      const users = getAllUsers();
-      return sendJson(res, 200, {
-        success: true,
-        count: users.length,
-        users
-      });
-    } catch (err) {
-      return sendJson(res, 500, {
-        success: false,
-        message: 'Kullanıcılar listelenirken hata oluştu: ' + err.message
-      });
-    }
-  }
-
-  // --- Statik Dosya Sunumu ---
-  if (pathname === '/' || pathname === '') {
-    pathname = '/index.html';
-  }
-
-  const safePath = path.normalize(path.join(PUBLIC_DIR, pathname));
-
-  // Güvenlik: dizin dışına çıkışı engelle
-  if (!safePath.startsWith(PUBLIC_DIR)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Erişim engellendi');
-    return;
-  }
-
-  fs.stat(safePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end('<h1>404 - Sayfa veya Dosya Bulunamadı</h1><p><a href="/">Ana Sayfaya Dön</a></p>');
-      return;
-    }
-
-    const ext = path.extname(safePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-    res.writeHead(200, {
-      'Content-Type': contentType,
-      'Access-Control-Allow-Origin': '*'
-    });
-    fs.createReadStream(safePath).pipe(res);
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`===================================================`);
-  console.log(`   66 Vizite - Sunucu Başarıyla Başlatıldı!`);
-  console.log(`   Adres: http://localhost:${PORT}`);
-  console.log(`===================================================`);
+// Demo / Hoca Sunumu Kullanıcı Listeleme
+app.get('/api/users', (req, res) => {
+  try {
+    const users = getAllUsers();
+    return res.status(200).json({
+      success: true,
+      count: users.length,
+      users
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: 'Kullanıcılar alınırken hata oluştu: ' + err.message
+    });
+  }
 });
+
+// 404 Sayfası
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
+// Global Hata Yakalayıcı
+app.use((err, req, res, next) => {
+  console.error('Sunucu Hatası:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Beklenmeyen bir sunucu hatası oluştu.'
+  });
+});
+
+// Sunucuyu Başlat
+const serverInstance = app.listen(PORT, () => {
+  console.log('===================================================');
+  console.log('   66 Vizite - Platform Sunucusu Başarıyla Başlatıldı!');
+  console.log(`   Yerel Adres: http://localhost:${PORT}`);
+  console.log('   Güvenlik: JWT + HTTP-Only Çerezler + Rate Limiting Aktif');
+  console.log('   Veritabanı: SQLite (İlişkisel & Otomatik Şema)');
+  console.log('===================================================');
+});
+
+module.exports = { app, serverInstance };
