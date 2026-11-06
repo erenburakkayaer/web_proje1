@@ -1,44 +1,42 @@
--- ============================================================================
--- MyCar Platformu - Veritabanı Şeması (Database Schema)
--- Standart SQL & SQLite / MySQL Uyumlu
--- ============================================================================
+-- =========================================================
+-- 66 Vizite - Veritabanı Tablo Yapıları ve Örnek Veriler
+-- =========================================================
 
--- 1. Kullanıcılar Tablosu (Users)
+-- 1. Kullanıcılar Tablosu (Roller: user, admin, root_admin)
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    salt VARCHAR(64) NOT NULL,
-    phone_number VARCHAR(20) DEFAULT NULL,
-    plan_tier VARCHAR(20) DEFAULT 'free' CHECK(plan_tier IN ('free', 'pro', 'business')),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    full_name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    salt TEXT DEFAULT '',
+    role TEXT DEFAULT 'user',
+    plan_tier TEXT DEFAULT 'pro',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Araçlar Tablosu (Vehicles)
+-- 2. Araçlar ve QR Kodlar Tablosu
 CREATE TABLE IF NOT EXISTS vehicles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    plate_number VARCHAR(20) NOT NULL,
-    brand_model VARCHAR(100) DEFAULT NULL,
-    color VARCHAR(50) DEFAULT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- 3. QR Kodlar Tablosu (QR Codes)
-CREATE TABLE IF NOT EXISTS qr_codes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vehicle_id INTEGER NOT NULL,
-    qr_token VARCHAR(64) NOT NULL UNIQUE,
-    is_active INTEGER DEFAULT 1 CHECK(is_active IN (0, 1)),
+    user_id INTEGER DEFAULT 1,
+    plate_number TEXT NOT NULL,
+    brand_model TEXT NOT NULL,
+    color TEXT DEFAULT 'Beyaz • Otomobil',
+    parking_note TEXT DEFAULT 'Park halindedir. Acil durumda bildirim gönderebilirsiniz.',
+    is_active INTEGER DEFAULT 1,
     scan_count INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- İndeksler (Sorgu Performansı ve Benzersizlik İçin)
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_vehicles_user ON vehicles(user_id);
-CREATE INDEX IF NOT EXISTS idx_qr_token ON qr_codes(qr_token);
+-- 3. QR Bildirimleri Tablosu
+CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plate_number TEXT NOT NULL,
+    alert_type TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Örnek Araç Kaydı
+INSERT INTO vehicles (id, user_id, plate_number, brand_model, color, parking_note, is_active, scan_count)
+SELECT 1, 1, '34 VZT 66', '66 Vizite Demo Araç', 'Siyah • Sedan', '10 dakikaya geliyorum, acilse bildirim gönderin.', 1, 14
+WHERE NOT EXISTS (SELECT 1 FROM vehicles WHERE id = 1);

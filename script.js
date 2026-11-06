@@ -22,6 +22,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // "Panel" yazısı yalnızca 10 yönetici Gmail hesabından biri giriş yaptığında görünür
+  const navPanelLink = document.getElementById('navPanelLink');
+  if (navPanelLink) {
+    navPanelLink.style.display = 'none';
+    fetch('/api.php?islem=me')
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.user && data.user.canAccessAdmin) {
+          navPanelLink.style.display = 'inline-block';
+        }
+      })
+      .catch(() => {});
+  }
+
   // ----------------------------------------------------
   // 2. GİRİŞ VE KAYIT MODALI (1. ADIM: KAYIT OLUN)
   // ----------------------------------------------------
@@ -57,6 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginTrigger) {
     loginTrigger.addEventListener('click', () => openAuthModal('login'));
   }
+
+  // Doğrudan URL ile yetkisiz giriş denemesi varsa giriş ekranını aç
+  if (new URLSearchParams(window.location.search).get('yetkisiz') === '1') {
+    openAuthModal('login');
+    alert('Yetkisiz erişim engellendi! Admin Paneline yalnızca 10 yetkili yönetici hesabı (Genel Müdür, Yardımcıları ve Sorumlular) giriş yapabilir.');
+  }
   if (stepBtnRegister) {
     stepBtnRegister.addEventListener('click', () => openAuthModal('register'));
   }
@@ -91,39 +111,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Giriş Yap Formu Gönderimi
+  // Giriş Yap Formu Gönderimi (Sadece 10 Yönetici Hesabı Admin Paneline Gider)
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
 
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
+      const res = await fetch('/api.php?islem=login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        if (data.user.canAccessAdmin) {
           window.location.href = 'dashboard.html';
-          return;
+        } else {
+          authModal.classList.remove('open');
+          alert(`Hoş geldiniz ${data.user.fullName}! Standart üye olarak giriş yaptınız.\n(Not: Admin Paneline yalnızca 10 yönetici hesabı girebilir.)`);
         }
+      } else {
         alert(data.message || 'Giriş yapılamadı.');
-      } catch (err) {
-        // Fallback demo modunda panele geçiş sağla
-        localStorage.setItem('currentUser', JSON.stringify({
-          fullName: email.split('@')[0].toUpperCase() || 'Sürücü',
-          email: email,
-          planTier: 'pro'
-        }));
-        window.location.href = 'dashboard.html';
       }
     });
   }
 
-  // Kayıt Formu Gönderimi
+  // Kayıt Formu Gönderimi (Standart Üye Kaydı - Admin Paneline Giremez)
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -131,27 +146,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPassword').value;
 
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, email, password, planTier: 'pro' })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          alert('Tebrikler! Hesabınız başarıyla oluşturuldu. Şimdi panelinize yönlendiriliyorsunuz.');
-          window.location.href = 'dashboard.html';
-          return;
-        }
+      const res = await fetch('/api.php?islem=register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, password, planTier: 'pro' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        authModal.classList.remove('open');
+        alert('Tebrikler! Üye hesabınız başarıyla oluşturuldu. Şimdi QR kodunuzu oluşturabilirsiniz.');
+      } else {
         alert(data.message || 'Kayıt işlemi başarısız.');
-      } catch (err) {
-        localStorage.setItem('currentUser', JSON.stringify({
-          fullName: fullName || 'Sürücü',
-          email: email,
-          planTier: 'pro'
-        }));
-        window.location.href = 'dashboard.html';
       }
     });
   }
@@ -287,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Satın Alma / Oluşturma Formu
   if (buyQrForm) {
-    buyQrForm.addEventListener('submit', (e) => {
+    buyQrForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const plate = qrPlateInput.value.trim();
       const selectedType = document.querySelector('input[name="productType"]:checked')?.value;
@@ -299,9 +305,18 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Lütfen teslimat için Ad Soyad ve Adres alanlarını doldurunuz.');
           return;
         }
-        alert(`Harika! ${plate} plakalı reflektif ön cam stickerınız için siparişiniz alındı.\nKargo takip numaranız SMS ile iletilecektir.`);
+      }
+
+      await fetch('/api.php?islem=add_vehicle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plate, brand: '66 Vizite QR Araç', color: selectedType === 'sticker' ? 'Reflektif Sticker' : 'Dijital QR' })
+      });
+
+      if (selectedType === 'sticker') {
+        alert(`Harika! ${plate} plakalı reflektif ön cam stickerınız için siparişiniz veritabanına kaydedildi.`);
       } else {
-        alert(`Tebrikler! ${plate} plakalı dijital QR kodunuz hazırlandı.`);
+        alert(`Tebrikler! ${plate} plakalı dijital QR kodunuz veritabanına kaydedildi ve indiriliyor.`);
         btnDownloadQrDirect?.click();
       }
 
@@ -389,19 +404,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Not Güncelleme Formu
   if (driverNoteForm) {
-    driverNoteForm.addEventListener('submit', (e) => {
+    driverNoteForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const val = driverQuickNote.value.trim() || 'Park halindedir.';
+      const isActive = driverParkToggle ? (driverParkToggle.checked ? 1 : 0) : 1;
       if (simNoteText) {
         simNoteText.textContent = `"${val}"`;
       }
-      alert('Park notunuz kaydedildi ve QR kodunuzu tarayan herkes için anında güncellendi.');
+      await fetch('/api.php?islem=update_park', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: val, isActive })
+      });
+      alert('Park notunuz veritabanına kaydedildi ve QR kodunuzu tarayan herkes için anında güncellendi.');
     });
   }
 
   // Simülatör Hızlı Bildirim Aksiyonları
   simActionButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const type = btn.getAttribute('data-type');
       let msg = '';
 
@@ -424,6 +445,12 @@ document.addEventListener('DOMContentLoaded', () => {
         default:
           msg = 'Bildirim araç sahibine güvenle iletildi.';
       }
+
+      await fetch('/api.php?islem=send_notif', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plate: '34 VZT 66', type, message: msg })
+      });
 
       if (simSuccessAlert && simSuccessDetail) {
         simSuccessDetail.textContent = msg;

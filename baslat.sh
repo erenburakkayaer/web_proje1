@@ -1,18 +1,21 @@
 #!/usr/bin/env bash
-# 66 Vizite Yerel Başlatıcı (macOS / Linux)
+# 66 Vizite - PHP Yerel Sunucu Başlatıcı
 cd "$(dirname "$0")"
 
 PORT=${PORT:-3000}
 
-echo "==================================================="
-echo "   66 Vizite - Yerel Sunucu Başlatılıyor"
-echo "==================================================="
-echo "Adres: http://localhost:$PORT"
-echo ""
-
-# Tarayıcıda aç
-if which open >/dev/null 2>&1; then
-  sleep 1 && open "http://localhost:$PORT" &
+if command -v php >/dev/null 2>&1; then
+  PHP_BIN="php"
+elif [ -x "/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin/php" ]; then
+  PHP_BIN="/Applications/Local.app/Contents/Resources/extraResources/lightning-services/php-8.2.29+0/bin/darwin-arm64/bin/php"
+else
+  echo "Hata: PHP bulunamadı."
+  exit 1
 fi
 
-node server.js
+echo "==================================================="
+echo "   66 Vizite - PHP Backend Sunucusu Başlatıldı"
+echo "   Adres: http://localhost:$PORT"
+echo "==================================================="
+
+"$PHP_BIN" -S "localhost:$PORT" router.php

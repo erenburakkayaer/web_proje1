@@ -78,12 +78,12 @@
           </svg>
           <span class="brand-name">66 Vizite</span>
         </a>
-        <h1>Hesap Oluştur</h1>
-        <p>Pro pakete başlamak ve aracınızı eklemek için kaydolun.</p>
+        <h1 id="regPageTitle">Hesap Oluştur</h1>
+        <p id="regPageDesc">Paketinize başlamak ve aracınızı eklemek için kaydolun.</p>
       </div>
 
       <!-- Temel Kayıt Formu -->
-      <form id="pageRegisterForm" class="auth-form-card" action="/api/auth/register" method="POST">
+      <form id="pageRegisterForm" class="auth-form-card" action="/api.php?islem=register" method="POST">
         <div class="form-group">
           <label for="name">Ad Soyad</label>
           <input type="text" id="name" name="fullName" placeholder="Adınız Soyadınız" required>
@@ -109,33 +109,31 @@
   </div>
 
   <script>
+    const params = new URLSearchParams(window.location.search);
+    const secilenPlan = params.get('plan') || 'pro';
+    const planIsimleri = { free: 'Free Paket', pro: 'Pro Paket', business: 'Business Paket' };
+    if (planIsimleri[secilenPlan]) {
+      document.getElementById('regPageDesc').textContent = planIsimleri[secilenPlan] + ' ile başlamak ve aracınızı eklemek için kaydolun.';
+    }
+
     document.getElementById('pageRegisterForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const fullName = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      if (!fullName || !email || !password) {
-        alert('Lütfen tüm alanları doldurunuz.');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, email, password, planTier: 'pro' })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          alert('Tebrikler! Kayıt başarılı. Ana sayfaya yönlendiriliyorsunuz.');
-          window.location.href = 'index.html';
-        } else {
-          alert('Kayıt başarısız: ' + (data.message || 'Bilinmeyen hata'));
-        }
-      } catch (err) {
-        alert('Kayıt simülasyonu: Bilgileriniz alındı (' + fullName + '). Sunucu aktif olduğunda veritabanına işlenecektir.');
+      const res = await fetch('/api.php?islem=register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, password, planTier: secilenPlan })
+      });
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        alert('Tebrikler! Üye kaydınız tamamlandı. Ana sayfaya yönlendiriliyorsunuz.');
         window.location.href = 'index.html';
+      } else {
+        alert(data.message || 'Kayıt başarısız.');
       }
     });
   </script>

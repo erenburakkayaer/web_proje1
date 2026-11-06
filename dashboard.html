@@ -106,7 +106,7 @@
         <div class="user-avatar-circle" id="userAvatarText">AD</div>
         <div class="user-meta-info">
           <span class="user-display-name" id="userDisplayName">Ali Demir</span>
-          <span class="user-display-role">Pro Üye • Doğrulanmış</span>
+          <span class="user-display-role" id="userRoleLabel">Üye • Doğrulanmış</span>
         </div>
         <button class="logout-icon-btn" id="logoutBtn" title="Çıkış Yap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -132,8 +132,8 @@
             </svg>
           </button>
           <div>
-            <h1 class="topbar-page-title">Sürücü Paneli</h1>
-            <p class="topbar-page-subtitle">Hoş geldiniz, araçlarınız ve QR vizite kartlarınız aktif.</p>
+            <h1 class="topbar-page-title" id="topbarRoleTitle">Sürücü Paneli (Üye)</h1>
+            <p class="topbar-page-subtitle" id="topbarRoleSubtitle">Hoş geldiniz, araçlarınız ve QR vizite kartlarınız aktif.</p>
           </div>
         </div>
 
@@ -606,6 +606,43 @@
 
         </section>
 
+        <!-- ==================== 5. HİYERARŞİK SORUMLU & YARDIMCI YÖNETİM PANELİ ==================== -->
+        <section class="notif-section-card" id="adminRoleSection" style="display: none; margin-top: 28px;">
+          <div class="dash-section-header">
+            <div>
+              <h2 class="dash-section-title" id="adminSectionTitle">👑 Hiyerarşik Sorumlu & Yardımcı Yönetim Paneli</h2>
+              <p class="dash-section-desc" id="adminSectionDesc">
+                Her yetkili yalnızca kendi alt kademesindeki sorumluları, yardımcıları ve üyeleri ekleyebilir, yükseltip alçaltabilir veya çıkartabilir.
+              </p>
+            </div>
+            <span class="trend-badge trend-up" id="adminBadgeText">YETKİ SEVİYESİ</span>
+          </div>
+
+          <!-- Alt Kademeye Yeni Yetkili / Yardımcı / Üye Ekleme Formu -->
+          <form id="addSubUserForm" onsubmit="handleAddSubUser(event)" style="display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; padding: 14px; background: rgba(245, 166, 35, 0.06); border: 1px solid var(--border-color); border-radius: 10px; align-items: center;">
+            <input type="text" id="subUserName" placeholder="Ad Soyad" required style="flex: 1; min-width: 150px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+            <input type="email" id="subUserEmail" placeholder="E-posta Adresi" required style="flex: 1; min-width: 170px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+            <select id="subUserRoleSelect" class="form-select" style="flex: 1; min-width: 210px; padding: 9px 12px;"></select>
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">+ Alt Kademeye Ekle</button>
+          </form>
+
+          <div style="overflow-x: auto; margin-top: 14px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                  <th style="padding: 10px;">Kademe</th>
+                  <th style="padding: 10px;">Ad Soyad</th>
+                  <th style="padding: 10px;">E-posta</th>
+                  <th style="padding: 10px;">Mevcut Görev</th>
+                  <th style="padding: 10px;">Yükselt / Alçalt (Terfi / Tenzil)</th>
+                  <th style="padding: 10px;">İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
       </div>
     </main>
 
@@ -765,24 +802,54 @@
         });
       }
 
-      // 3. Oturum Açmış Kullanıcı Bilgilerini Çekme (Varsa localStorage)
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        try {
-          const userObj = JSON.parse(storedUser);
-          if (userObj.fullName) {
-            document.getElementById('userDisplayName').textContent = userObj.fullName;
-            const initials = userObj.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userAvatarText').textContent = initials;
-          }
-        } catch (e) {}
+      // 3. Oturum Açmış Yönetici ve 10 Kademeli Hiyerarşik Rol Bilgisi
+      function applyUserRole(userObj) {
+        if (!userObj || (userObj.roleLevel || 0) < 1) {
+          window.location.replace('index.html?yetkisiz=1');
+          return;
+        }
+        const level = userObj.roleLevel;
+        const title = userObj.roleTitle || 'Yönetici';
+        document.getElementById('userDisplayName').textContent = userObj.fullName || 'Yönetici';
+        const initials = (userObj.fullName || 'Y').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatarText').textContent = initials;
+        document.getElementById('userRoleLabel').textContent = title;
+        document.getElementById('topbarRoleTitle').textContent = title + ' Paneli';
+
+        const adminSec = document.getElementById('adminRoleSection');
+        adminSec.style.display = 'block';
+        document.getElementById('adminBadgeText').textContent = `${title} (Yetki: ${level}/10)`;
+        if (level === 1) {
+          document.getElementById('addSubUserForm').style.display = 'none';
+          document.getElementById('adminSectionDesc').textContent =
+            '10. Kademe (En Alt Yönetici) olduğunuz için altınızda başka yönetici kademesi bulunmamaktadır.';
+        } else {
+          document.getElementById('adminSectionDesc').textContent =
+            `Sizin yetki seviyeniz: ${level}/10. Sadece seviyesi ${level - 1} ve altındaki sorumluları/yardımcıları ekleyebilir, yükseltip alçaltabilir veya çıkartabilirsiniz.`;
+        }
+        loadAdminUsers();
       }
 
-      // 4. Çıkış Butonu
+      fetch('/api.php?islem=me')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.user && data.user.roleLevel >= 1) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            applyUserRole(data.user);
+          } else {
+            window.location.replace('index.html?yetkisiz=1');
+          }
+        })
+        .catch(() => {
+          window.location.replace('index.html?yetkisiz=1');
+        });
+
+      // 4. Çıkış Butonu (PHP Session Sonlandırır)
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
+        logoutBtn.addEventListener('click', async () => {
           if (confirm('Oturumu kapatmak ve ana sayfaya dönmek istiyor musunuz?')) {
+            await fetch('/api.php?islem=logout');
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
           }
@@ -827,12 +894,22 @@
           }
         });
       });
+
+      // 8. Veritabanındaki Kayıtlı Araçları Yükle
+      fetch('/api.php?islem=vehicles')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.vehicles) {
+            data.vehicles.forEach(v => renderVehicleCard(v.plate_number, v.brand_model, v.color, v.is_active == 1, v.scan_count || 0));
+          }
+        })
+        .catch(() => {});
     });
 
     // ==================== FONKSİYONLAR ====================
 
-    // Araç QR Durumu Aç / Kapat
-    function toggleVehicleStatus(checkbox, plate) {
+    // Araç QR Durumu Aç / Kapat (Veritabanı Bağlantılı)
+    async function toggleVehicleStatus(checkbox, plate) {
       const isChecked = checkbox.checked;
       const statusLabel = checkbox.closest('.status-switch-row').querySelector('.status-label');
       const dot = statusLabel.querySelector('.status-dot');
@@ -845,6 +922,12 @@
         dot.classList.add('inactive');
         text.textContent = 'QR Geçici Olarak Kapalı';
       }
+
+      await fetch('/api.php?islem=toggle_qr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plate, isActive: isChecked ? 1 : 0 })
+      });
     }
 
     // QR Önizleme Modalı
@@ -868,16 +951,10 @@
       document.getElementById('addVehicleModal').classList.remove('open');
     }
 
-    // Yeni Araç Kayıt Formu
-    function handleNewVehicleSubmit(e) {
-      e.preventDefault();
-      const plate = document.getElementById('inputPlate').value.trim().toUpperCase();
-      const brand = document.getElementById('inputBrand').value.trim();
-      const color = document.getElementById('inputColor').value.trim();
+    // Araç Kartını Ekrana Çizen Yardımcı Fonksiyon
+    function renderVehicleCard(plate, brand, color, isActive = true, scanCount = 0) {
+      if (document.querySelector(`.vehicle-card[data-plate="${plate}"]`)) return;
 
-      if (!plate || !brand) return;
-
-      // Yeni Kart Oluştur
       const newCard = document.createElement('article');
       newCard.className = 'vehicle-card';
       newCard.setAttribute('data-plate', plate);
@@ -897,11 +974,11 @@
         </div>
         <div class="status-switch-row">
           <div class="status-label">
-            <span class="status-dot"></span>
-            <span>QR İletişimi Aktif</span>
+            <span class="status-dot ${isActive ? '' : 'inactive'}"></span>
+            <span>${isActive ? 'QR İletişimi Aktif' : 'QR Geçici Olarak Kapalı'}</span>
           </div>
           <label class="switch-toggle" title="QR'ı Aç / Kapat">
-            <input type="checkbox" checked onchange="toggleVehicleStatus(this, '${plate}')">
+            <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleVehicleStatus(this, '${plate}')">
             <span class="slider-round"></span>
           </label>
         </div>
@@ -926,7 +1003,7 @@
           <div class="vehicle-stats-list">
             <div class="v-stat-row">
               <span class="v-stat-title">Taranma Sayısı:</span>
-              <span class="v-stat-num">0 kez (Yeni)</span>
+              <span class="v-stat-num">${scanCount} kez</span>
             </div>
             <div class="v-stat-row">
               <span class="v-stat-title">Durum:</span>
@@ -954,15 +1031,32 @@
       const slotCard = document.getElementById('slotAddVehicleCard');
       grid.insertBefore(newCard, slotCard);
 
-      // Sayacı Güncelle
       const currentCount = document.querySelectorAll('.vehicle-card').length;
       document.getElementById('navVehiclesCount').textContent = currentCount;
       document.getElementById('kpiVehicleCount').textContent = `${currentCount} / 5`;
       document.getElementById('kpiActiveQrCount').textContent = `${currentCount} / ${currentCount}`;
+    }
 
+    // Yeni Araç Kayıt Formu (PHP Veritabanına Kaydeder)
+    async function handleNewVehicleSubmit(e) {
+      e.preventDefault();
+      const plate = document.getElementById('inputPlate').value.trim().toUpperCase();
+      const brand = document.getElementById('inputBrand').value.trim();
+      const color = document.getElementById('inputColor').value.trim();
+      const note = document.getElementById('inputNote')?.value.trim() || '';
+
+      if (!plate || !brand) return;
+
+      await fetch('/api.php?islem=add_vehicle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plate, brand, color, note })
+      });
+
+      renderVehicleCard(plate, brand, color, true, 0);
       closeAddVehicleModal();
       document.getElementById('addVehicleForm').reset();
-      alert(`✅ ${plate} plakalı ${brand} aracı başarıyla sisteme eklendi ve QR kodu üretildi!`);
+      alert(`✅ ${plate} plakalı ${brand} aracı başarıyla veritabanına kaydedildi ve QR kodu üretildi!`);
     }
 
     // Baskı ve İndirme
@@ -972,6 +1066,94 @@
 
     function downloadStickerPng() {
       alert('QR Vizite etiketi yüksek çözünürlüklü olarak hazırlandı. Baskı almak için PDF/Yazdır seçeneğini de kullanabilirsiniz.');
+    }
+
+    // Hiyerarşik Sorumlu & Yardımcı Tablosunu Yükleme, Ekleme, Yükseltme/Alçaltma ve Çıkartma
+    async function loadAdminUsers() {
+      const res = await fetch('/api.php?islem=users');
+      const data = await res.json();
+      if (!data.success || !data.users) return;
+
+      const myLevel = data.myLevel;
+      const roles = data.roles;
+
+      // Sadece kendi seviyesinin ALTINDAKİ rolleri seçebileceği liste oluştur
+      const altRoller = Object.entries(roles).filter(([key, info]) => info.level < myLevel);
+      const subSelect = document.getElementById('subUserRoleSelect');
+      if (subSelect) {
+        subSelect.innerHTML = altRoller.map(([key, info]) => `<option value="${key}">${info.title}</option>`).join('');
+      }
+
+      const tbody = document.getElementById('adminUsersTableBody');
+      tbody.innerHTML = data.users.map(u => {
+        const altimdaMi = u.role_level < myLevel;
+        return `
+          <tr style="border-bottom: 1px solid var(--border-color); ${!altimdaMi ? 'opacity: 0.65;' : ''}">
+            <td style="padding: 10px;"><span class="trend-badge">${u.role_level} / 10</span></td>
+            <td style="padding: 10px; font-weight: 600;">${u.full_name}</td>
+            <td style="padding: 10px; color: var(--text-secondary);">${u.email}</td>
+            <td style="padding: 10px; font-weight: 500;">${u.role_title}</td>
+            <td style="padding: 10px;">
+              ${altimdaMi ? `
+                <select class="form-select" style="padding: 5px 8px; width: auto;" onchange="changeUserRole(${u.id}, this.value)">
+                  ${altRoller.map(([rKey, rInfo]) => `
+                    <option value="${rKey}" ${u.role === rKey ? 'selected' : ''}>${rInfo.title}</option>
+                  `).join('')}
+                </select>
+              ` : `<span style="font-size: 0.82rem; color: var(--text-muted);">🔒 Üst / Eşit Yetki (Dokunulamaz)</span>`}
+            </td>
+            <td style="padding: 10px;">
+              ${altimdaMi ? `
+                <button type="button" class="btn btn-outline btn-xs" style="border-color: #ff4757; color: #ff4757;" onclick="deleteSubUser(${u.id}, '${u.full_name}')">
+                  🗑️ Çıkart
+                </button>
+              ` : `-`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function handleAddSubUser(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('subUserName').value.trim();
+      const email = document.getElementById('subUserEmail').value.trim();
+      const role = document.getElementById('subUserRoleSelect').value;
+
+      const res = await fetch('/api.php?islem=add_sub_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, role })
+      });
+      const data = await res.json();
+      alert(data.message);
+      if (data.success) {
+        document.getElementById('addSubUserForm').reset();
+        loadAdminUsers();
+      }
+    }
+
+    async function changeUserRole(userId, newRole) {
+      const res = await fetch('/api.php?islem=change_role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, newRole })
+      });
+      const data = await res.json();
+      alert(data.message);
+      loadAdminUsers();
+    }
+
+    async function deleteSubUser(userId, fullName) {
+      if (!confirm(`${fullName} adlı kişiyi alt kademenizden çıkartmak (silmek) istediğinize emin misiniz?`)) return;
+      const res = await fetch('/api.php?islem=delete_user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      const data = await res.json();
+      alert(data.message);
+      loadAdminUsers();
     }
   </script>
 </body>

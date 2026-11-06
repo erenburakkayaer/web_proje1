@@ -32,7 +32,7 @@
       <nav class="nav-links">
         <a href="#nasil-calisir" class="nav-link" data-i18n="nav.howItWorks">Nasıl Çalışır</a>
         <a href="#fiyatlandirma" class="nav-link" data-i18n="nav.pricing">Fiyatlandırma</a>
-        <a href="dashboard.html" class="nav-link nav-link-accent">Panel</a>
+        <a href="dashboard.html" class="nav-link nav-link-accent" id="navPanelLink" style="display: none;">Panel</a>
       </nav>
 
       <div class="nav-actions">
@@ -240,7 +240,7 @@
               <li><span class="check">✓</span> <span data-i18n="pricing.f4">Temel destek</span></li>
             </ul>
             <div class="pricing-footer">
-              <button class="btn btn-card-outline" data-i18n="pricing.freeBtn">Ücretsiz Başla</button>
+              <a href="register.html?plan=free" class="btn btn-card-outline btn-full" data-i18n="pricing.freeBtn">Ücretsiz Başla</a>
             </div>
           </div>
 
@@ -268,7 +268,7 @@
               </li>
             </ul>
             <div class="pricing-footer">
-              <a href="register.html" class="btn btn-primary btn-full" data-i18n="pricing.proBtn">Pro'ya Geçin</a>
+              <a href="register.html?plan=pro" class="btn btn-primary btn-full" data-i18n="pricing.proBtn">Pro'ya Geçin</a>
             </div>
           </div>
 
@@ -289,7 +289,7 @@
               <li><span class="check">✓</span> <span data-i18n="pricing.biz5">API erişimi</span></li>
             </ul>
             <div class="pricing-footer">
-              <button class="btn btn-card-outline" data-i18n="pricing.bizBtn">İletişime Geçin</button>
+              <a href="register.html?plan=business" class="btn btn-card-outline btn-full" data-i18n="pricing.bizBtn">Business'a Geçin</a>
             </div>
           </div>
         </div>
@@ -362,6 +362,26 @@
           <input type="password" id="loginPassword" name="password" placeholder="••••••••" required>
         </div>
         <button type="submit" class="btn btn-primary btn-full" data-i18n="auth.submitLogin">Giriş Yap</button>
+
+        <!-- Sadece Admin Paneline Girebilen 10 Yönetici Hesabı -->
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px; text-align: center;">
+            Admin Paneli 10 Yönetici Gmail Hesabı (Şifre: 123456):
+          </label>
+          <select class="form-select" onchange="if(this.value){document.getElementById('loginEmail').value=this.value;document.getElementById('loginPassword').value='123456';}">
+            <option value="">-- Yönetici Gmail Hesabı Seçin (10 Kademe) --</option>
+            <option value="genelmudur@gmail.com">1. 👑 Genel Müdür (genelmudur@gmail.com)</option>
+            <option value="genelmuduryrd@gmail.com">2. ⭐ Genel Müdür Yrd. (genelmuduryrd@gmail.com)</option>
+            <option value="ulke@gmail.com">3. 🌍 Ülke Sorumlusu (ulke@gmail.com)</option>
+            <option value="ulkeyrd@gmail.com">4. 🌍 Ülke Sorumlusu Yrd. (ulkeyrd@gmail.com)</option>
+            <option value="bolge@gmail.com">5. 🗺️ Bölge Sorumlusu (bolge@gmail.com)</option>
+            <option value="bolgeyrd@gmail.com">6. 🗺️ Bölge Sorumlusu Yrd. (bolgeyrd@gmail.com)</option>
+            <option value="il@gmail.com">7. 🏙️ İl Sorumlusu (il@gmail.com)</option>
+            <option value="ilyrd@gmail.com">8. 🏙️ İl Sorumlusu Yrd. (ilyrd@gmail.com)</option>
+            <option value="ilce@gmail.com">9. 📍 İlçe Sorumlusu (ilce@gmail.com)</option>
+            <option value="ilceyrd@gmail.com">10. 📍 İlçe Sorumlusu Yrd. (ilceyrd@gmail.com)</option>
+          </select>
+        </div>
       </form>
 
       <!-- Kayıt Formu (Temel HTML Formu) -->
